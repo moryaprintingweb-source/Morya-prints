@@ -223,8 +223,7 @@ export const catalog: Category[] = [
       {
         name: "Frosted Vinyl",
         startingAt: 45,
-        image:
-          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNfabRdu6Fv6IARaZLFCmK3oKAzzKkhu28Bw&s",
+        image: visuals[2],
         quantity: "Custom size",
         singleSidePrice: "45",
         description:
@@ -258,8 +257,7 @@ export const catalog: Category[] = [
       {
         name: "Star Flex Printing",
         startingAt: 22,
-        image:
-          "https://i0.wp.com/sparshmedia.com/wp-content/uploads/2026/03/Star-Flex-Banner-Front-lit.webp?fit=600%2C600&ssl=1",
+        image: visuals[0],
         quantity: "Custom size",
         description:
           "Star Flex Printing is a popular and cost-effective solution for banners, hoardings, promotional boards, event backdrops, and outdoor advertising. Printed on durable flex material with vibrant colors and sharp visibility, it is suitable for both indoor and outdoor use. Ideal for shops, events, political campaigns, exhibitions, sales promotions, and business branding, Star Flex provides strong visual impact at an affordable price.",
@@ -276,7 +274,7 @@ export const catalog: Category[] = [
       {
         name: "Black Back Printing",
         startingAt: 30,
-        image: "https://digitalprintindia.in/wp-content/uploads/2024/01/1000-x-1000-px-10.jpg",
+        image: visuals[2],
         quantity: "Custom size",
         description:
           "Black Back Printing is ideal for high-opacity banners and displays where light blocking is required. The black backing prevents see-through effects and improves visibility, making it perfect for outdoor banners, event branding, promotional displays, and advertising boards. It offers strong color output, better readability, and a professional finish, especially in areas with strong lighting or overlapping backgrounds.",
@@ -284,8 +282,7 @@ export const catalog: Category[] = [
       {
         name: "Backlit Flex",
         startingAt: 45,
-        image:
-          "https://5.imimg.com/data5/SELLER/Default/2025/8/533959472/KY/KU/SK/187485456/backlit-flex-printing-service-500x500.jpg",
+        image: visuals[3],
         quantity: "Custom size",
         description:
           "Backlit Flex Printing is designed for illuminated signboards, glow signs, light boxes, and premium display branding. It allows light to pass through evenly, making graphics appear bright, clear, and attractive at night or in indoor lighting setups. Perfect for retail stores, restaurants, showrooms, malls, and commercial signage, backlit flex ensures excellent visibility and a premium brand appearance.",
@@ -318,8 +315,7 @@ export const catalog: Category[] = [
       {
         name: "Envelopes",
         startingAt: 2699,
-        image:
-          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuyHBP0sOTW3a4h2UYLHlYf2JRKPj37MCxFg&s",
+        image: visuals[1],
         quantity: "1000",
         singleSidePrice: "2699",
         description:
