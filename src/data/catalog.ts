@@ -26,8 +26,11 @@ export type Product = {
   name: string;
   startingAt: number;
   image: string;
+  sourceImageUrl?: string;
   description: string;
   quantity: string;
+  singleSidePrice?: string;
+  bothSidePrice?: string;
 };
 
 export type Category = {
@@ -45,6 +48,18 @@ const visuals = [
   "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?auto=format&fit=crop&w=900&q=80",
   "https://images.unsplash.com/photo-1523726491678-bf852e717f6a?auto=format&fit=crop&w=900&q=80",
 ];
+
+const driveImage = (id: string) => {
+  const fallbacks: Record<string, string> = {
+    "1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu": visuals[0],
+    "1RXt2Rq_RU14o09s3h0VNyX6MtWgjWHD7": visuals[1],
+    "1aghUepuJutSwk_8YbiBQLc3m7nsflVoP": visuals[3],
+    "10Kkj5oe8XOhbqP3A_dikqJzJcQwb8wW5": visuals[1],
+    "1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7": visuals[2],
+  };
+
+  return fallbacks[id] ?? visuals[0];
+};
 
 const fromNames = (
   names: string[],
@@ -70,30 +85,50 @@ export const catalog: Category[] = [
       {
         name: "Standard Visiting Cards",
         startingAt: 199,
-        image: visuals[0],
+        image: driveImage("1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu/view?usp=drive_link",
         quantity: "100 / 200 / 500 / 1000",
-        description: "Sharp, full-colour business cards for everyday networking.",
+        singleSidePrice: "199 / 299 / 499 / 999",
+        bothSidePrice: "299 / 399 / 799 / 1299",
+        description:
+          "Our Standard Visiting Cards are the perfect choice for professionals, startups, and businesses looking for high-quality business cards at an affordable price. Printed on premium cardstock using advanced digital printing technology, these cards deliver sharp text, vibrant colors, and a professional finish. Available in single or double-sided printing with multiple paper thickness options, they are ideal for everyday networking, meetings, and brand promotion. Fast printing and custom designs available.",
       },
       {
         name: "Premium Visiting Cards",
         startingAt: 799,
-        image: visuals[1],
+        image: driveImage("1RXt2Rq_RU14o09s3h0VNyX6MtWgjWHD7"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/1RXt2Rq_RU14o09s3h0VNyX6MtWgjWHD7/view?usp=drive_link",
         quantity: "100 / 200 / 500 / 1000",
-        description: "Luxury cardstock with an elevated, professional finish.",
+        singleSidePrice: "799 / 1299 / 1899 / 2399",
+        bothSidePrice: "999 / 1499 / 2099 / 2499",
+        description:
+          "Make a lasting first impression with our Premium Visiting Cards, crafted using superior-quality cardstock and luxury finishes. Choose from velvet, textured, metallic, or thick premium paper with options like Spot UV, foil stamping, embossing, and soft-touch lamination. These elegant business cards are designed to reflect your brand's professionalism and leave a memorable impact. Perfect for executives, entrepreneurs, corporate professionals, and luxury brands seeking a premium identity.",
       },
       {
         name: "Matte Lamination Cards",
         startingAt: 299,
-        image: visuals[2],
+        image: driveImage("1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu/view?usp=drive_link",
         quantity: "100 / 200 / 500 / 1000",
-        description: "Smooth, glare-free cards with durable protection.",
+        singleSidePrice: "299 / 399 / 599 / 1099",
+        bothSidePrice: "399 / 499 / 899 / 1399",
+        description:
+          "Our Matte Lamination Visiting Cards offer a smooth, elegant, and glare-free finish that enhances the overall appearance of your business cards. The protective matte coating increases durability while providing a premium, sophisticated look and comfortable feel. Resistant to fingerprints and minor scratches, these cards are ideal for professionals who prefer a clean and modern design. Perfect for corporate businesses, consultants, architects, and creative professionals.",
       },
       {
         name: "Gloss Lamination Cards",
         startingAt: 299,
-        image: visuals[3],
+        image: driveImage("1aghUepuJutSwk_8YbiBQLc3m7nsflVoP"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/1aghUepuJutSwk_8YbiBQLc3m7nsflVoP/view?usp=drive_link",
         quantity: "100 / 200 / 500 / 1000",
-        description: "Vibrant, glossy cards that make colours pop.",
+        singleSidePrice: "299 / 399 / 599 / 1099",
+        bothSidePrice: "399 / 499 / 899 / 1399",
+        description:
+          "Gloss Lamination Visiting Cards feature a shiny, vibrant finish that makes colors appear richer and images more eye-catching. The glossy protective coating enhances durability while giving your business cards a polished, professional appearance. These cards are ideal for businesses that want bold, colorful designs with excellent visual impact. Perfect for retail stores, marketing agencies, photographers, restaurants, salons, and businesses looking to stand out with premium-quality printed cards.",
       },
       {
         name: "Spot UV Visiting Cards",
@@ -116,21 +151,34 @@ export const catalog: Category[] = [
         image:
           "https://www.inkprint.in/_next/image?url=https%3A%2F%2Finkprint2-bucket.s3.amazonaws.com%2Fimg%2Fproduct_image%2Fset%2FFlyers_pamphlets_WEBP_W4LSQTL.webp&w=1200&q=75",
         quantity: "1000 / 2000",
-        description: "Compact, high-impact flyers for promotions and events.",
+        singleSidePrice: "1299 / 1699",
+        bothSidePrice: "1699 / 1999",
+        description:
+          "Promote your business, products, events, or special offers with professionally printed A5 Flyers. Printed on premium-quality paper using high-resolution digital or offset printing, our A5 flyers feature vibrant colors, sharp images, and a premium finish. Available in single or double-sided printing with matte or gloss lamination options, they are perfect for marketing campaigns, promotional events, restaurants, educational institutes, and retail businesses. Custom designs and fast delivery available.",
       },
       {
         name: "A4 Flyers",
         startingAt: 1999,
-        image: visuals[1],
+        image: driveImage("10Kkj5oe8XOhbqP3A_dikqJzJcQwb8wW5"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/10Kkj5oe8XOhbqP3A_dikqJzJcQwb8wW5/view?usp=drive_link",
         quantity: "1000 / 2000",
-        description: "More room for detailed offers, menus and product information.",
+        singleSidePrice: "1999 / 2999",
+        bothSidePrice: "2999 / 3999",
+        description:
+          "Our A4 Flyers provide ample space to showcase detailed information, product catalogs, service lists, or promotional campaigns. Printed on premium-quality paper with crisp text and vibrant colors, these flyers are ideal for business presentations, product launches, exhibitions, schools, healthcare, and corporate marketing. Choose from multiple paper GSM options and matte or gloss finishes to create a professional marketing material that leaves a lasting impression.",
       },
       {
-        name: "Folded Brochures",
+        name: "Brochures",
         startingAt: 1999,
-        image: visuals[2],
+        image: driveImage("1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7"),
+        sourceImageUrl:
+          "https://drive.google.com/file/d/1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7/view?usp=drive_link",
         quantity: "500 / 1000",
-        description: "Bi-fold, tri-fold and custom brochures made to tell your story.",
+        singleSidePrice: "1999 / 2999",
+        bothSidePrice: "2999 / 3999",
+        description:
+          "Our Brochures are designed to present your business, products, and services in a professional and attractive way. Ideal for corporate profiles, real estate projects, hospitals, educational institutes, product catalogs, and marketing campaigns, these brochures are printed with high-quality paper and sharp color reproduction. Available in bi-fold, tri-fold, and multi-page formats with multiple finishing options, they help communicate your brand message effectively.",
       },
       {
         name: "Marketing Posters",
@@ -158,29 +206,39 @@ export const catalog: Category[] = [
         name: "Vinyl Printing",
         startingAt: 25,
         image: "https://www.arcprint.in/category/wp-content/uploads/2024/05/illumate.jpg",
-        quantity: "Per sq. ft.",
-        description: "Durable indoor and outdoor vinyl graphics for branding.",
+        quantity: "Custom size",
+        singleSidePrice: "25",
+        description:
+          "Our Vinyl Printing service is ideal for indoor and outdoor branding, advertising, and decorative applications. Printed using high-quality vinyl material with vibrant inks, it offers excellent durability, weather resistance, and long-lasting performance. Perfect for shop branding, wall graphics, vehicle graphics, glass stickers, product promotions, and signage. Available in matte, gloss, transparent, and custom-cut finishes for a professional brand presentation.",
       },
       {
         name: "One Way Vision Vinyl",
         startingAt: 35,
         image: "https://cpimg.tistatic.com/10337942/b/4/One-Way-Vision-Printing-Services..jpg",
-        quantity: "Per sq. ft.",
-        description: "Privacy and vibrant outside graphics for glass applications.",
+        quantity: "Custom size",
+        singleSidePrice: "35",
+        description:
+          "One Way Vision Vinyl is perfect for glass surfaces where you want attractive branding from the outside while maintaining visibility from the inside. Commonly used on office glass, shop windows, vehicles, malls, and commercial spaces, it provides privacy along with effective advertising. Printed with high-resolution graphics, it is durable, weather-resistant, and easy to apply, making it a smart solution for promotional and decorative glass branding.",
       },
       {
         name: "Frosted Vinyl",
         startingAt: 45,
-        image: visuals[2],
-        quantity: "Per sq. ft.",
-        description: "Elegant etched-glass privacy for offices and retail spaces.",
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNfabRdu6Fv6IARaZLFCmK3oKAzzKkhu28Bw&s",
+        quantity: "Custom size",
+        singleSidePrice: "45",
+        description:
+          "Frosted Vinyl is a stylish solution for glass partition branding, office privacy, and decorative interiors. It gives a premium etched-glass appearance while allowing light to pass through, making it ideal for corporate offices, clinics, salons, showrooms, restaurants, and meeting rooms. Available with custom patterns, logos, and cut designs, frosted vinyl adds elegance and privacy to any glass surface.",
       },
       {
         name: "Clear Transparent Vinyl",
         startingAt: 45,
-        image: visuals[3],
-        quantity: "Per sq. ft.",
-        description: "Clean transparent adhesive graphics for windows and labels.",
+        image:
+          "https://image.made-in-china.com/365f3j00MmQbDikrbIqL/Printable-Clear-Transparent-Vinyl-Paper-for-Inkjet-Printer.webp",
+        quantity: "Custom size",
+        singleSidePrice: "45",
+        description:
+          "Clear Transparent Vinyl is ideal for premium glass branding, product labels, window graphics, and transparent sticker applications. It provides a clean and professional finish while allowing the background surface to remain visible. Suitable for offices, retail stores, product packaging, cafes, and promotional branding, this vinyl offers sharp print quality and excellent adhesive strength for a neat, long-lasting result.",
       },
       {
         name: "Custom Window Graphics",
@@ -202,29 +260,35 @@ export const catalog: Category[] = [
         startingAt: 22,
         image:
           "https://i0.wp.com/sparshmedia.com/wp-content/uploads/2026/03/Star-Flex-Banner-Front-lit.webp?fit=600%2C600&ssl=1",
-        quantity: "Per sq. ft.",
-        description: "Vibrant, weather-ready banners and promotional flex.",
+        quantity: "Custom size",
+        description:
+          "Star Flex Printing is a popular and cost-effective solution for banners, hoardings, promotional boards, event backdrops, and outdoor advertising. Printed on durable flex material with vibrant colors and sharp visibility, it is suitable for both indoor and outdoor use. Ideal for shops, events, political campaigns, exhibitions, sales promotions, and business branding, Star Flex provides strong visual impact at an affordable price.",
       },
       {
         name: "Eco Solvent Flex",
         startingAt: 35,
-        image: visuals[1],
-        quantity: "Per sq. ft.",
-        description: "Premium, low-odour flex with rich colour and detail.",
+        image:
+          "https://cpimg.tistatic.com/10927083/b/4/Eco-Solvent-Vinyl-Window-Graphics-Printing-Services.jpg",
+        quantity: "Custom size",
+        description:
+          "Eco Solvent Flex Printing offers superior print quality with rich colors, smooth gradients, and long-lasting durability. It is suitable for premium indoor and outdoor branding where fine detailing and vibrant output are required. Commonly used for retail branding, exhibition displays, shop boards, banners, posters, and promotional graphics, eco solvent printing provides a cleaner finish with better color accuracy and durability.",
       },
       {
-        name: "Black Back Flex",
+        name: "Black Back Printing",
         startingAt: 30,
-        image: visuals[2],
-        quantity: "Per sq. ft.",
-        description: "Opaque flex for maximum impact over existing graphics.",
+        image: "https://digitalprintindia.in/wp-content/uploads/2024/01/1000-x-1000-px-10.jpg",
+        quantity: "Custom size",
+        description:
+          "Black Back Printing is ideal for high-opacity banners and displays where light blocking is required. The black backing prevents see-through effects and improves visibility, making it perfect for outdoor banners, event branding, promotional displays, and advertising boards. It offers strong color output, better readability, and a professional finish, especially in areas with strong lighting or overlapping backgrounds.",
       },
       {
         name: "Backlit Flex",
         startingAt: 45,
-        image: visuals[3],
-        quantity: "Per sq. ft.",
-        description: "Illuminated graphics for light boxes and glow signboards.",
+        image:
+          "https://5.imimg.com/data5/SELLER/Default/2025/8/533959472/KY/KU/SK/187485456/backlit-flex-printing-service-500x500.jpg",
+        quantity: "Custom size",
+        description:
+          "Backlit Flex Printing is designed for illuminated signboards, glow signs, light boxes, and premium display branding. It allows light to pass through evenly, making graphics appear bright, clear, and attractive at night or in indoor lighting setups. Perfect for retail stores, restaurants, showrooms, malls, and commercial signage, backlit flex ensures excellent visibility and a premium brand appearance.",
       },
       {
         name: "Hoarding Prints",
@@ -247,21 +311,28 @@ export const catalog: Category[] = [
         image:
           "https://d3pyarv4eotqu4.cloudfront.net/printongo/images/product/004_01131325202409.jpg",
         quantity: "1000",
-        description: "Premium letterheads for professional business communication.",
+        singleSidePrice: "2499",
+        description:
+          "Our Letterhead Printing service helps businesses create professional and branded communication materials. Printed on high-quality paper with sharp logos, text, and brand colors, letterheads are ideal for official documents, quotations, invoices, proposals, and corporate communication. Suitable for companies, consultants, hospitals, schools, and professionals, our letterheads add credibility and consistency to your business identity.",
       },
       {
-        name: "Custom Envelopes",
+        name: "Envelopes",
         startingAt: 2699,
-        image: visuals[1],
+        image:
+          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSuyHBP0sOTW3a4h2UYLHlYf2JRKPj37MCxFg&s",
         quantity: "1000",
-        description: "Branded envelopes for documents, invoices and invitations.",
+        singleSidePrice: "2699",
+        description:
+          "Custom Envelope Printing is perfect for businesses that want a professional and branded mailing solution. Printed with your company logo, address, and design, these envelopes are ideal for official letters, invoices, invitations, documents, and corporate communication. Available in multiple sizes and paper options, our envelopes help strengthen your brand identity with every dispatch.",
       },
       {
         name: "Receipt Books",
         startingAt: 1500,
         image: "https://m.media-amazon.com/images/I/71iG-bxy5WL.jpg",
-        quantity: "5 / 10 books",
-        description: "Duplicate or triplicate receipt books with your business details.",
+        quantity: "5 book / 10 Book",
+        singleSidePrice: "1500 / 1800",
+        description:
+          "Receipt Books are essential for shops, businesses, service providers, and organizations that need proper billing and payment records. Available in duplicate or triplicate formats with custom branding, numbering, and business details, our receipt books are printed on quality paper for clear writing and easy record keeping. Ideal for retail stores, offices, schools, societies, and service businesses.",
       },
       ...fromNames(
         ["GST Bill Books", "Company Profile Folders"],

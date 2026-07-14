@@ -141,6 +141,30 @@ function ProductDetail() {
               Tax included. Shipping calculated at checkout.
             </p>
 
+            {(product.singleSidePrice || product.bothSidePrice) && (
+              <div className="mt-5 rounded-xl border bg-soft p-4">
+                <div className="text-sm font-bold text-navy">Price options from client sheet</div>
+                <div className="mt-3 grid gap-2 text-sm font-semibold text-foreground sm:grid-cols-2">
+                  {product.singleSidePrice && (
+                    <div className="rounded-lg bg-white p-3">
+                      <span className="block text-xs uppercase tracking-wide text-muted-foreground">
+                        Single side
+                      </span>
+                      Rs. {product.singleSidePrice}
+                    </div>
+                  )}
+                  {product.bothSidePrice && (
+                    <div className="rounded-lg bg-white p-3">
+                      <span className="block text-xs uppercase tracking-wide text-muted-foreground">
+                        Both side
+                      </span>
+                      Rs. {product.bothSidePrice}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Spec label="Print" value="Full Color" />
               <Spec label="Material" value="Custom" />

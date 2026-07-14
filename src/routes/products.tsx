@@ -151,7 +151,7 @@ function Products() {
                         Starting at
                       </span>
                       <div className="font-display text-lg font-bold text-navy">
-                        ₹{product.startingAt}
+                        Rs. {product.startingAt}
                       </div>
                     </div>
                     <button
@@ -172,6 +172,14 @@ function Products() {
                   <div className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
                     <Check className="h-3.5 w-3.5 text-orange" /> {product.quantity}
                   </div>
+                  {(product.singleSidePrice || product.bothSidePrice) && (
+                    <div className="mt-3 grid gap-1 rounded-lg bg-soft p-3 text-[11px] font-semibold text-navy">
+                      {product.singleSidePrice && (
+                        <div>Single side: Rs. {product.singleSidePrice}</div>
+                      )}
+                      {product.bothSidePrice && <div>Both side: Rs. {product.bothSidePrice}</div>}
+                    </div>
+                  )}
                   <Link
                     to="/products/$slug"
                     params={{ slug: product.slug }}
