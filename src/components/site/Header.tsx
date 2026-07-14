@@ -18,6 +18,7 @@ const NAV = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const { count } = useCart();
 
@@ -27,6 +28,12 @@ export function Header() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  useEffect(() => {
+    if (!open) {
+      setMobileCategoriesOpen(false);
+    }
+  }, [open]);
 
   return (
     <header
@@ -154,26 +161,34 @@ export function Header() {
             {NAV.map((n) =>
               n.label === "Categories" ? (
                 <div key={`${n.to}-${n.label}`} className="rounded-md bg-soft/60 p-2">
-                  <Link
-                    to="/products"
-                    onClick={() => setOpen(false)}
+                  <button
+                    type="button"
+                    onClick={() => setMobileCategoriesOpen((value) => !value)}
                     className="flex items-center justify-between rounded-md px-3 py-3 font-semibold text-navy"
+                    aria-expanded={mobileCategoriesOpen}
                   >
-                    Categories <ChevronDown className="h-4 w-4" />
-                  </Link>
-                  <div className="grid grid-cols-2 gap-1 px-1 pb-2">
-                    {catalog.map((category) => (
-                      <Link
-                        key={category.slug}
-                        to="/products"
-                        search={{ category: category.slug }}
-                        onClick={() => setOpen(false)}
-                        className="rounded-md px-3 py-2 text-xs font-semibold text-foreground/75 hover:bg-white hover:text-orange"
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
+                    Categories
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        mobileCategoriesOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {mobileCategoriesOpen && (
+                    <div className="grid grid-cols-2 gap-1 px-1 pb-2">
+                      {catalog.map((category) => (
+                        <Link
+                          key={category.slug}
+                          to="/products"
+                          search={{ category: category.slug }}
+                          onClick={() => setOpen(false)}
+                          className="rounded-md px-3 py-2 text-xs font-semibold text-foreground/75 hover:bg-white hover:text-orange"
+                        >
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link
