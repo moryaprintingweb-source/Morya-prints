@@ -87,13 +87,13 @@ function ProductDetail() {
   return (
     <SiteLayout>
       <section className="container-x py-5 md:py-10">
-        <div className="grid gap-7 lg:grid-cols-[1.05fr_.95fr]">
-          <div>
+        <div className="grid items-start gap-7 lg:grid-cols-[1.05fr_.95fr]">
+          <div className="lg:sticky lg:top-24 lg:self-start">
             <div className="rounded-lg border bg-white p-3">
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="aspect-square w-full rounded-md bg-soft object-cover"
+                className="aspect-square w-full rounded-md bg-soft object-cover lg:max-h-[calc(100vh-12rem)]"
               />
             </div>
             <div className="mt-3 grid grid-cols-5 gap-2">
