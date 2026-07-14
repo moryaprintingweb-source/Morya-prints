@@ -21,6 +21,18 @@ import {
   Sticker,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import flexBacklit from "../assets/products/flex-printing-backlit-flex.jpg";
+import flexBlackBack from "../assets/products/flex-printing-black-back-prinitng.jpg";
+import flexEcoSolvent from "../assets/products/flex-printing-eco-solvent-flex.jpg";
+import flexStar from "../assets/products/flex-printing-star-flex-printing.webp";
+import a5Flyers from "../assets/products/flyers-pamphlets-a5-flyers.webp";
+import envelopes from "../assets/products/office-printing-envelopes.jpg";
+import letterheads from "../assets/products/office-printing-letterheads.jpg";
+import receiptBooks from "../assets/products/office-printing-receipt-books.jpg";
+import clearTransparentVinyl from "../assets/products/vinyl-printing-clear-transparent-vinyl.webp";
+import frostedVinyl from "../assets/products/vinyl-printing-frosted-vinyl.jpg";
+import oneWayVisionVinyl from "../assets/products/vinyl-printing-one-way-vision-vinyl.jpg";
+import vinylPrinting from "../assets/products/vinyl-printing-vinyl-printing.jpg";
 
 export type Product = {
   name: string;
@@ -55,7 +67,7 @@ const driveImage = (id: string) => {
     "1RXt2Rq_RU14o09s3h0VNyX6MtWgjWHD7": visuals[1],
     "1aghUepuJutSwk_8YbiBQLc3m7nsflVoP": visuals[3],
     "10Kkj5oe8XOhbqP3A_dikqJzJcQwb8wW5": visuals[1],
-    "1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7": visuals[2],
+    "1Ay1NmELuTkfwvv8iBqUB1EFUH51abvua": visuals[2],
   };
 
   return fallbacks[id] ?? visuals[0];
@@ -148,8 +160,7 @@ export const catalog: Category[] = [
       {
         name: "A5 Flyers",
         startingAt: 1299,
-        image:
-          "https://www.inkprint.in/_next/image?url=https%3A%2F%2Finkprint2-bucket.s3.amazonaws.com%2Fimg%2Fproduct_image%2Fset%2FFlyers_pamphlets_WEBP_W4LSQTL.webp&w=1200&q=75",
+        image: a5Flyers,
         quantity: "1000 / 2000",
         singleSidePrice: "1299 / 1699",
         bothSidePrice: "1699 / 1999",
@@ -171,9 +182,9 @@ export const catalog: Category[] = [
       {
         name: "Brochures",
         startingAt: 1999,
-        image: driveImage("1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7"),
+        image: driveImage("1Ay1NmELuTkfwvv8iBqUB1EFUH51abvua"),
         sourceImageUrl:
-          "https://drive.google.com/file/d/1Ay1NmELuTkfwvv8iBqUB1EFUH51Zocy7/view?usp=drive_link",
+          "https://drive.google.com/file/d/1Ay1NmELuTkfwvv8iBqUB1EFUH51abvua/view?usp=drive_link",
         quantity: "500 / 1000",
         singleSidePrice: "1999 / 2999",
         bothSidePrice: "2999 / 3999",
@@ -205,7 +216,7 @@ export const catalog: Category[] = [
       {
         name: "Vinyl Printing",
         startingAt: 25,
-        image: "https://www.arcprint.in/category/wp-content/uploads/2024/05/illumate.jpg",
+        image: vinylPrinting,
         quantity: "Custom size",
         singleSidePrice: "25",
         description:
@@ -214,7 +225,7 @@ export const catalog: Category[] = [
       {
         name: "One Way Vision Vinyl",
         startingAt: 35,
-        image: "https://cpimg.tistatic.com/10337942/b/4/One-Way-Vision-Printing-Services..jpg",
+        image: oneWayVisionVinyl,
         quantity: "Custom size",
         singleSidePrice: "35",
         description:
@@ -223,7 +234,7 @@ export const catalog: Category[] = [
       {
         name: "Frosted Vinyl",
         startingAt: 45,
-        image: visuals[2],
+        image: frostedVinyl,
         quantity: "Custom size",
         singleSidePrice: "45",
         description:
@@ -232,8 +243,7 @@ export const catalog: Category[] = [
       {
         name: "Clear Transparent Vinyl",
         startingAt: 45,
-        image:
-          "https://image.made-in-china.com/365f3j00MmQbDikrbIqL/Printable-Clear-Transparent-Vinyl-Paper-for-Inkjet-Printer.webp",
+        image: clearTransparentVinyl,
         quantity: "Custom size",
         singleSidePrice: "45",
         description:
@@ -257,7 +267,7 @@ export const catalog: Category[] = [
       {
         name: "Star Flex Printing",
         startingAt: 22,
-        image: visuals[0],
+        image: flexStar,
         quantity: "Custom size",
         description:
           "Star Flex Printing is a popular and cost-effective solution for banners, hoardings, promotional boards, event backdrops, and outdoor advertising. Printed on durable flex material with vibrant colors and sharp visibility, it is suitable for both indoor and outdoor use. Ideal for shops, events, political campaigns, exhibitions, sales promotions, and business branding, Star Flex provides strong visual impact at an affordable price.",
@@ -265,8 +275,7 @@ export const catalog: Category[] = [
       {
         name: "Eco Solvent Flex",
         startingAt: 35,
-        image:
-          "https://cpimg.tistatic.com/10927083/b/4/Eco-Solvent-Vinyl-Window-Graphics-Printing-Services.jpg",
+        image: flexEcoSolvent,
         quantity: "Custom size",
         description:
           "Eco Solvent Flex Printing offers superior print quality with rich colors, smooth gradients, and long-lasting durability. It is suitable for premium indoor and outdoor branding where fine detailing and vibrant output are required. Commonly used for retail branding, exhibition displays, shop boards, banners, posters, and promotional graphics, eco solvent printing provides a cleaner finish with better color accuracy and durability.",
@@ -274,7 +283,7 @@ export const catalog: Category[] = [
       {
         name: "Black Back Printing",
         startingAt: 30,
-        image: visuals[2],
+        image: flexBlackBack,
         quantity: "Custom size",
         description:
           "Black Back Printing is ideal for high-opacity banners and displays where light blocking is required. The black backing prevents see-through effects and improves visibility, making it perfect for outdoor banners, event branding, promotional displays, and advertising boards. It offers strong color output, better readability, and a professional finish, especially in areas with strong lighting or overlapping backgrounds.",
@@ -282,7 +291,7 @@ export const catalog: Category[] = [
       {
         name: "Backlit Flex",
         startingAt: 45,
-        image: visuals[3],
+        image: flexBacklit,
         quantity: "Custom size",
         description:
           "Backlit Flex Printing is designed for illuminated signboards, glow signs, light boxes, and premium display branding. It allows light to pass through evenly, making graphics appear bright, clear, and attractive at night or in indoor lighting setups. Perfect for retail stores, restaurants, showrooms, malls, and commercial signage, backlit flex ensures excellent visibility and a premium brand appearance.",
@@ -305,8 +314,7 @@ export const catalog: Category[] = [
       {
         name: "Letterheads",
         startingAt: 2499,
-        image:
-          "https://d3pyarv4eotqu4.cloudfront.net/printongo/images/product/004_01131325202409.jpg",
+        image: letterheads,
         quantity: "1000",
         singleSidePrice: "2499",
         description:
@@ -315,7 +323,7 @@ export const catalog: Category[] = [
       {
         name: "Envelopes",
         startingAt: 2699,
-        image: visuals[1],
+        image: envelopes,
         quantity: "1000",
         singleSidePrice: "2699",
         description:
@@ -324,7 +332,7 @@ export const catalog: Category[] = [
       {
         name: "Receipt Books",
         startingAt: 1500,
-        image: "https://m.media-amazon.com/images/I/71iG-bxy5WL.jpg",
+        image: receiptBooks,
         quantity: "5 book / 10 Book",
         singleSidePrice: "1500 / 1800",
         description:
