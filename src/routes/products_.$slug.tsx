@@ -86,17 +86,17 @@ function ProductDetail() {
 
   return (
     <SiteLayout>
-      <section className="container-x py-5 md:py-10 lg:h-[calc(100vh-5.25rem)] lg:overflow-hidden lg:py-6">
-        <div className="grid items-start gap-7 lg:h-full lg:grid-cols-[1.05fr_.95fr]">
-          <div className="lg:sticky lg:top-24 lg:flex lg:h-full lg:flex-col lg:self-start lg:overflow-hidden">
-            <div className="rounded-lg border bg-white p-3 lg:min-h-0 lg:flex-1">
+      <section className="container-x py-5 md:py-10">
+        <div className="grid items-start gap-7 lg:grid-cols-[1.05fr_.95fr]">
+          <div className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-lg border bg-white p-3">
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="aspect-square w-full rounded-md bg-soft object-cover lg:h-full lg:max-h-none"
+                className="aspect-square w-full rounded-md bg-soft object-cover lg:max-h-[calc(100vh-12rem)]"
               />
             </div>
-            <div className="mt-3 grid shrink-0 grid-cols-5 gap-2">
+            <div className="mt-3 grid grid-cols-5 gap-2">
               {images.map((image, index) => (
                 <button
                   key={`${image}-${index}`}
@@ -111,7 +111,7 @@ function ProductDetail() {
             </div>
           </div>
 
-          <div className="lg:h-full lg:overflow-y-auto lg:pb-8 lg:pr-2 lg:pt-2">
+          <div className="lg:pt-2">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-orange px-3 py-1 text-xs font-extrabold text-white">
                 Save {discount}%
