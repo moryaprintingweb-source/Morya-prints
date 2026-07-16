@@ -4,14 +4,15 @@ import {
   Check,
   Heart,
   MessageCircle,
-  Minus,
-  Plus,
   Share2,
   ShoppingBag,
   Star,
   Truck,
+  Upload,
+  Images,
+  ChevronDown,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { allProducts, findProductBySlug } from "../data/catalog";
 import { useCart } from "../lib/cart";
@@ -38,13 +39,15 @@ function ProductDetail() {
   const { slug } = Route.useParams();
   const product = findProductBySlug(slug);
   const { addItem } = useCart();
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState(100);
   const [selectedImage, setSelectedImage] = useState(product?.image ?? "");
   const [activeDetailTab, setActiveDetailTab] = useState<
     "description" | "specifications" | "other-information"
   >("description");
   const [deliverySpeed, setDeliverySpeed] = useState("Standard delivery");
   const [finish, setFinish] = useState("Matte");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
 
   const related = useMemo(() => {
     if (!product) return [];
@@ -78,8 +81,9 @@ function ProductDetail() {
   const mrp = Math.round(product.startingAt * 1.18);
   const discount = Math.max(5, Math.round(((mrp - product.startingAt) / mrp) * 100));
   const buyMessage = encodeURIComponent(
-    `Hello Morya Printing Point, I want to order ${product.name}. Quantity: ${quantity}`,
+    `Hello Morya Printing Point, I want to order ${product.name}. Quantity: ${quantity}. Delivery: ${deliverySpeed}.${uploadedFile ? ` I have selected artwork: ${uploadedFile.name}` : ""}`,
   );
+  const quantityOptions = [100, 200, 500, 1000, 2000];
 
   const addProduct = () =>
     addItem(
@@ -229,7 +233,7 @@ function ProductDetail() {
               <div>
                 <div className="mb-2 text-sm font-bold text-navy">Delivery speed</div>
                 <div className="grid gap-2 sm:grid-cols-2">
-                  {["Standard delivery", "Priority delivery"].map((option) => (
+                {["Standard delivery", "Priority / same-day in Pune"].map((option) => (
                     <button
                       key={option}
                       type="button"
@@ -246,6 +250,20 @@ function ProductDetail() {
                 </div>
               </div>
               <label className="block text-sm font-bold text-navy">
+                Quantity
+                <select
+                  value={quantity}
+                  onChange={(event) => setQuantity(Number(event.target.value))}
+                  className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-navy"
+                >
+                  {quantityOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option.toLocaleString()} units · from Rs. {Math.round((product.startingAt * option) / 100).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block text-sm font-bold text-navy">
                 Finish
                 <select
                   value={finish}
@@ -260,6 +278,48 @@ function ProductDetail() {
               </label>
             </div>
 
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <Link to="/gallery" className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-sky-400 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-sky-300">
+                <Images className="h-5 w-5" /> Browse designs
+              </Link>
+              <button
+                type="button"
+                onClick={() => uploadInputRef.current?.click()}
+                className="flex min-h-12 items-center justify-center gap-2 rounded-lg border border-navy/25 bg-white px-4 py-3 text-sm font-bold text-navy transition hover:border-orange hover:text-orange"
+              >
+                <Upload className="h-5 w-5" /> {uploadedFile ? "Artwork selected" : "Upload design"}
+              </button>
+              <input
+                ref={uploadInputRef}
+                type="file"
+                accept=".pdf,.ai,.cdr,.psd,.jpg,.jpeg,.png"
+                className="sr-only"
+                onChange={(event) => setUploadedFile(event.target.files?.[0] ?? null)}
+              />
+            </div>
+            {uploadedFile && (
+              <p className="mt-2 text-xs font-medium text-green-700">Selected: {uploadedFile.name}. Send it with your WhatsApp order for confirmation.</p>
+            )}
+
+            <div className="mt-5 divide-y rounded-lg border bg-white">
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-4 text-sm font-semibold text-navy">
+                  Specs &amp; templates <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                </summary>
+                <div className="border-t px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+                  Share a print-ready PDF, AI, CDR, PSD, JPG or PNG file. Keep important text inside the safe area; our team will confirm the final artwork before production.
+                </div>
+              </details>
+              <details className="group">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-4 text-sm font-semibold text-navy">
+                  Product options <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                </summary>
+                <div className="border-t px-4 py-3 text-sm leading-relaxed text-muted-foreground">
+                  Custom sizes, paper/material, lamination, sides and finishing are available. Contact us for a tailored quote or bulk-order pricing.
+                </div>
+              </details>
+            </div>
+
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Spec label="Print" value="Full Color" />
               <Spec label="Material" value="Custom" />
@@ -268,24 +328,7 @@ function ProductDetail() {
             </div>
 
             <div className="mt-7 flex gap-3">
-              <div className="inline-flex items-center rounded-full border bg-white">
-                <button
-                  aria-label="Decrease quantity"
-                  onClick={() => setQuantity((value) => Math.max(1, value - 1))}
-                  className="grid h-12 w-12 place-items-center"
-                >
-                  <Minus className="h-4 w-4" />
-                </button>
-                <span className="min-w-10 text-center text-sm font-bold">{quantity}</span>
-                <button
-                  aria-label="Increase quantity"
-                  onClick={() => setQuantity((value) => value + 1)}
-                  className="grid h-12 w-12 place-items-center"
-                >
-                  <Plus className="h-4 w-4" />
-                </button>
-              </div>
-              <button onClick={addProduct} className="btn-navy flex-1">
+              <button onClick={addProduct} className="btn-navy w-full">
                 <ShoppingBag className="h-4 w-4" /> Add To Cart
               </button>
             </div>
