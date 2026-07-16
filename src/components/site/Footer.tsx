@@ -3,13 +3,13 @@ import {
   ExternalLink,
   Facebook,
   Instagram,
-  Linkedin,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
+  Twitter,
+  Youtube,
 } from "lucide-react";
-import logo from "../../assets/morya-logo.svg";
 
 const shopLinks = [
   "Visiting Cards",
@@ -28,7 +28,7 @@ export function Footer() {
       <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <div className="flex items-center gap-3">
-            <img src={logo} alt="Morya Printing Point" className="h-12 w-12" />
+            <img src="/morya-footer-logo.png" alt="Morya Printing Point" className="h-20 w-20" />
             <div>
               <div className="font-display font-bold text-white">Morya Printing Point</div>
               <div className="text-[10px] font-bold uppercase tracking-[.14em] text-orange">
@@ -41,11 +41,18 @@ export function Footer() {
             custom branding—made with care in Kothrud, Pune.
           </p>
           <div className="mt-5 flex gap-3">
-            {[Facebook, Instagram, Linkedin].map((Icon, index) => (
+            {[
+              [Facebook, "Facebook", "https://www.facebook.com/people/Morya-Printing-Point/pfbid02LV2uRUNe3BpdhRbeRCNPQ8zKjtMyEoxEhGKUGzispXfvtZoAQYMR5GskABgw4rrCl/"],
+              [Instagram, "Instagram", "https://www.instagram.com/morya_printing_point/"],
+              [Youtube, "YouTube", "https://www.youtube.com/@moryadigitalprinting"],
+              [Twitter, "X", "https://x.com/shendedesign"],
+            ].map(([Icon, label, href]) => (
               <a
-                key={index}
-                href="https://wa.me/918554842103"
-                aria-label="Contact Morya Printing Point on WhatsApp"
+                key={label as string}
+                href={href as string}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Morya Printing Point on ${label}`}
                 className="grid h-9 w-9 place-items-center rounded-full bg-white/10 transition hover:bg-orange"
               >
                 <Icon className="h-4 w-4 text-white" />
@@ -104,13 +111,20 @@ export function Footer() {
           </ul>
           <h4 className="mb-4 font-semibold text-white">Get in touch</h4>
           <ul className="space-y-3 text-sm">
-            <li className="flex gap-3">
-              <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
-              Shop No. 3, Jeet Building, near Jeet Ground, Lokmanya Colony, Kothrud, Pune 411038
+            <li>
+              <a
+                href="https://maps.app.goo.gl/TSBbNMXqBig85rtJ9"
+                target="_blank"
+                rel="noreferrer"
+                className="flex gap-3 hover:text-orange"
+              >
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
+                Shop No. 3, Jeet Building, near Jeet Ground, Lokmanya Colony, Kothrud, Pune 411038
+              </a>
             </li>
             <li>
               <a
-                href="https://share.google/fzqShCOs399ka2PWD"
+                href="https://share.google/3stt5fmHZPr0ByYUY"
                 target="_blank"
                 rel="noreferrer"
                 className="flex gap-3 hover:text-orange"

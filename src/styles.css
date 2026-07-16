@@ -214,3 +214,12 @@
 @utility slide-down {
   animation: slideDown 0.3s ease-out both;
 }
+
+@keyframes headerTicker {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+
+@utility header-ticker {
+  animation: headerTicker 30s linear infinite;
+}

@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Urbanist:wght@500;600;700;800&display=swap",
       },
-      { rel: "icon", href: "/morya-logo.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/morya-icon-logo.png", type: "image/png", sizes: "any" },
     ],
   }),
   shellComponent: RootShell,

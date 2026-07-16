@@ -1,7 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { ChevronDown, Menu, X, Phone, ShoppingBag } from "lucide-react";
-import logo from "../../assets/morya-logo.svg";
+import { ChevronDown, Menu, Search, X, ShoppingBag } from "lucide-react";
 import { useCart } from "../../lib/cart";
 import { catalog } from "../../data/catalog";
 
@@ -20,6 +19,7 @@ export function Header() {
   const [open, setOpen] = useState(false);
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [search, setSearch] = useState("");
   const { count } = useCart();
 
   useEffect(() => {
@@ -43,6 +43,11 @@ export function Header() {
           : "bg-white"
       }`}
     >
+      <div className="overflow-hidden bg-red-600 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[.1em] text-white">
+        <div className="header-ticker whitespace-nowrap">
+          YOUR TRUSTED PRINTING PARTNER FOR FAST &amp; QUALITY PRINTS.
+        </div>
+      </div>
       <div className="border-b border-border/70 bg-soft/70 text-[11px] text-navy">
         <div className="container-x flex items-center justify-between py-1.5">
           <span>Premium printing, made simple.</span>
@@ -51,9 +56,9 @@ export function Header() {
           </a>
         </div>
       </div>
-      <div className="container-x flex h-16 items-center justify-between gap-3 py-2 md:h-18 md:py-3">
+      <div className="container-x flex h-20 items-center justify-between gap-3 py-2 md:h-22 md:py-3">
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <img src={logo} alt="Morya Printing Point" className="h-10 w-10 md:h-11 md:w-11" />
+          <img src="/morya-icon-logo.png" alt="Morya Printing Point" className="h-14 w-14 md:h-16 md:w-16" />
           <div className="hidden sm:block leading-tight">
             <div className="font-display font-bold text-navy text-[15px]">Morya Printing Point</div>
             <div className="text-[10px] tracking-[0.16em] uppercase text-orange font-bold">
@@ -117,6 +122,25 @@ export function Header() {
           )}
         </nav>
 
+        <form
+          className="hidden items-center rounded-md border border-border bg-white px-2 py-1.5 lg:flex"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (search.trim()) window.location.assign(`/products?search=${encodeURIComponent(search.trim())}`);
+          }}
+        >
+          <label htmlFor="site-search" className="sr-only">Search products</label>
+          <input
+            id="site-search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search products"
+            className="w-24 bg-transparent text-xs outline-none placeholder:text-muted-foreground xl:w-36"
+          />
+          <button type="submit" aria-label="Search products" className="text-navy hover:text-orange">
+            <Search className="h-4 w-4" />
+          </button>
+        </form>
         <div className="hidden md:flex items-center gap-2 shrink-0">
           <Link to="/cart" className="btn-navy !py-2 !px-3 text-sm">
             <ShoppingBag className="h-4 w-4" /> Cart
@@ -126,9 +150,6 @@ export function Header() {
               </span>
             )}
           </Link>
-          <a href="tel:+918554842103" className="btn-navy !py-2 !px-3 text-sm">
-            <Phone className="h-4 w-4" /> Call
-          </a>
         </div>
 
         <div className="flex items-center gap-1 lg:hidden">
@@ -206,9 +227,6 @@ export function Header() {
               <Link to="/cart" onClick={() => setOpen(false)} className="btn-navy flex-1 text-sm">
                 <ShoppingBag className="h-4 w-4" /> Cart {count > 0 ? `(${count})` : ""}
               </Link>
-              <a href="tel:+918554842103" className="btn-navy flex-1 text-sm">
-                <Phone className="h-4 w-4" /> Call Now
-              </a>
             </div>
           </div>
         </div>

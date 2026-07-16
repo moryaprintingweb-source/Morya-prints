@@ -40,6 +40,11 @@ function ProductDetail() {
   const { addItem } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(product?.image ?? "");
+  const [activeDetailTab, setActiveDetailTab] = useState<
+    "description" | "specifications" | "other-information"
+  >("description");
+  const [deliverySpeed, setDeliverySpeed] = useState("Standard delivery");
+  const [finish, setFinish] = useState("Matte");
 
   const related = useMemo(() => {
     if (!product) return [];
@@ -66,6 +71,10 @@ function ProductDetail() {
   }
 
   const images = [product.image, ...related.slice(0, 4).map((item) => item.image)];
+  const selectedImageIndex = Math.max(images.indexOf(selectedImage), 0);
+  const selectAdjacentImage = (direction: number) => {
+    setSelectedImage(images[(selectedImageIndex + direction + images.length) % images.length]);
+  };
   const mrp = Math.round(product.startingAt * 1.18);
   const discount = Math.max(5, Math.round(((mrp - product.startingAt) / mrp) * 100));
   const buyMessage = encodeURIComponent(
@@ -87,14 +96,50 @@ function ProductDetail() {
   return (
     <SiteLayout>
       <section className="container-x py-5 md:py-10">
-        <div className="grid gap-7 lg:grid-cols-[1.05fr_.95fr]">
+        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+          <Link to="/" className="hover:text-navy">Home</Link>
+          <span>/</span>
+          <Link to="/products" search={{ category: product.category.slug }} className="hover:text-navy">
+            {product.category.name}
+          </Link>
+          <span>/</span>
+          <span className="font-semibold text-navy">{product.name}</span>
+        </nav>
+        <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
           <div>
-            <div className="rounded-lg border bg-white p-3">
+            <div className="relative rounded-2xl border bg-white p-3">
+              <button
+                type="button"
+                aria-label="Save product"
+                className="absolute right-6 top-6 z-10 grid h-11 w-11 place-items-center rounded-full bg-white shadow-md transition hover:text-orange"
+              >
+                <Heart className="h-5 w-5" />
+              </button>
               <img
                 src={selectedImage}
                 alt={product.name}
-                className="aspect-square w-full rounded-md bg-soft object-cover"
+                className="aspect-square w-full rounded-xl bg-soft object-cover"
               />
+              {images.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Previous image"
+                    onClick={() => selectAdjacentImage(-1)}
+                    className="absolute left-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-r-lg border bg-white text-2xl shadow-sm transition hover:text-orange"
+                  >
+                    ‹
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Next image"
+                    onClick={() => selectAdjacentImage(1)}
+                    className="absolute right-1 top-1/2 grid h-11 w-11 -translate-y-1/2 place-items-center rounded-l-lg border bg-white text-2xl shadow-sm transition hover:text-orange"
+                  >
+                    ›
+                  </button>
+                </>
+              )}
             </div>
             <div className="mt-3 grid grid-cols-5 gap-2">
               {images.map((image, index) => (
@@ -111,7 +156,7 @@ function ProductDetail() {
             </div>
           </div>
 
-          <div className="lg:pt-2">
+          <div className="lg:pt-1">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-orange px-3 py-1 text-xs font-extrabold text-white">
                 Save {discount}%
@@ -127,10 +172,25 @@ function ProductDetail() {
                 </Link>
               </span>
             </div>
-            <h1 className="font-display text-3xl font-bold leading-tight text-navy md:text-5xl">
+            <h1 className="font-display text-3xl font-bold leading-tight text-navy md:text-4xl">
               {product.name}
             </h1>
-            <p className="mt-3 text-sm font-bold text-muted-foreground">{product.quantity}</p>
+            <div className="mt-3 flex items-center gap-2 text-sm">
+              <div className="flex gap-0.5 text-orange" aria-label="5 out of 5 stars">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Star key={index} className="h-4 w-4 fill-current" />
+                ))}
+              </div>
+              <span className="text-muted-foreground">Trusted local print quality</span>
+            </div>
+            <div className="mt-6 border-y py-5 text-sm leading-relaxed text-foreground">
+              <p className="font-bold text-navy">Professional printing, tailored to your brand.</p>
+              <ul className="mt-3 list-disc space-y-1 pl-5 text-muted-foreground">
+                <li>Custom sizes, materials and finishing options.</li>
+                <li>Expert support for artwork, quantity and delivery planning.</li>
+                <li>Quality-checked production from our Kothrud, Pune team.</li>
+              </ul>
+            </div>
             <div className="mt-5 flex flex-wrap items-end gap-3">
               <div className="font-display text-3xl font-bold text-orange">
                 MRP Rs. {product.startingAt}
@@ -165,25 +225,46 @@ function ProductDetail() {
               </div>
             )}
 
+            <div className="mt-6 space-y-5">
+              <div>
+                <div className="mb-2 text-sm font-bold text-navy">Delivery speed</div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {["Standard delivery", "Priority delivery"].map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() => setDeliverySpeed(option)}
+                      className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
+                        deliverySpeed === option
+                          ? "border-navy bg-navy text-white"
+                          : "bg-white text-navy hover:border-orange"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <label className="block text-sm font-bold text-navy">
+                Finish
+                <select
+                  value={finish}
+                  onChange={(event) => setFinish(event.target.value)}
+                  className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-navy"
+                >
+                  <option>Matte</option>
+                  <option>Gloss</option>
+                  <option>Lamination</option>
+                  <option>Custom</option>
+                </select>
+              </label>
+            </div>
+
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <Spec label="Print" value="Full Color" />
               <Spec label="Material" value="Custom" />
               <Spec label="Finish" value="Premium" />
               <Spec label="MOQ" value={product.quantity.split("/")[0].trim()} />
-            </div>
-
-            <div className="mt-7">
-              <div className="mb-2 text-sm font-bold text-navy">Finish options</div>
-              <div className="flex flex-wrap gap-2">
-                {["Matte", "Gloss", "Lamination", "Custom"].map((option) => (
-                  <span
-                    key={option}
-                    className="rounded-full border bg-white px-4 py-2 text-sm font-semibold text-navy"
-                  >
-                    {option}
-                  </span>
-                ))}
-              </div>
             </div>
 
             <div className="mt-7 flex gap-3">
@@ -214,7 +295,7 @@ function ProductDetail() {
               rel="noreferrer"
               className="btn-primary mt-3 w-full"
             >
-              Buy it now on WhatsApp
+              Browse design options on WhatsApp
             </a>
 
             <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
@@ -235,17 +316,66 @@ function ProductDetail() {
       <section className="container-x border-t py-8 md:py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
           <div>
-            <div className="flex gap-8 border-b text-lg font-semibold text-muted-foreground">
-              <span className="border-b-2 border-navy pb-3 text-navy">Description</span>
-              <span className="pb-3">Specifications</span>
-              <span className="pb-3">Other Information</span>
+            <div
+              role="tablist"
+              aria-label="Product details"
+              className="flex gap-8 border-b text-lg font-semibold text-muted-foreground"
+            >
+              {[
+                ["description", "Description"],
+                ["specifications", "Specifications"],
+                ["other-information", "Other Information"],
+              ].map(([tab, label]) => {
+                const isActive = activeDetailTab === tab;
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    role="tab"
+                    aria-selected={isActive}
+                    onClick={() =>
+                      setActiveDetailTab(
+                        tab as "description" | "specifications" | "other-information",
+                      )
+                    }
+                    className={`-mb-px border-b-2 pb-3 transition-colors ${
+                      isActive
+                        ? "border-navy text-navy"
+                        : "border-transparent hover:text-navy"
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
-            <ul className="mt-6 space-y-2 text-sm leading-relaxed text-muted-foreground">
-              <li>{product.description}</li>
-              <li>Designed for clean brand presentation and reliable print quality.</li>
-              <li>Available with custom sizes, materials, lamination and finishing options.</li>
-              <li>Best suited for businesses, events, packaging, promotions and local branding.</li>
-            </ul>
+            <div role="tabpanel" className="mt-6 text-sm leading-relaxed text-muted-foreground">
+              {activeDetailTab === "description" && (
+                <ul className="space-y-2">
+                  <li>{product.description}</li>
+                  <li>Designed for clean brand presentation and reliable print quality.</li>
+                  <li>Available with custom sizes, materials, lamination and finishing options.</li>
+                  <li>Best suited for businesses, events, packaging, promotions and local branding.</li>
+                </ul>
+              )}
+              {activeDetailTab === "specifications" && (
+                <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                  <Detail label="Print" value="Full color" />
+                  <Detail label="Material" value="Custom material options" />
+                  <Detail label="Finish" value="Matte, gloss, lamination or custom" />
+                  <Detail label="Minimum order" value={product.quantity.split("/")[0].trim()} />
+                  <Detail label="Available quantity" value={product.quantity} />
+                  <Detail label="Starting price" value={`Rs. ${product.startingAt}`} />
+                </dl>
+              )}
+              {activeDetailTab === "other-information" && (
+                <ul className="space-y-2">
+                  <li>Artwork, size, quantity and finishing are confirmed before production.</li>
+                  <li>Delivery timelines depend on the final artwork and order quantity.</li>
+                  <li>Contact us on WhatsApp for custom sizes, bulk pricing or design assistance.</li>
+                </ul>
+              )}
+            </div>
           </div>
           <div className="rounded-lg bg-soft p-5">
             <h2 className="font-display text-xl font-bold text-navy">Need help choosing?</h2>
@@ -354,6 +484,15 @@ function Spec({ label, value }: { label: string; value: string }) {
         {label}
       </div>
       <div className="mt-1 text-sm font-extrabold text-navy">{value}</div>
+    </div>
+  );
+}
+
+function Detail({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border-b border-border/70 pb-3">
+      <dt className="text-xs font-bold uppercase tracking-wide text-navy">{label}</dt>
+      <dd className="mt-1">{value}</dd>
     </div>
   );
 }

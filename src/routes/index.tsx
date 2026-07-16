@@ -3,11 +3,10 @@ import { useEffect, useState } from "react";
 import {
   ArrowRight,
   Check,
-  ChevronLeft,
-  ChevronRight,
   Headphones,
   ShieldCheck,
   Sparkles,
+  Star,
   Truck,
 } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
@@ -16,6 +15,12 @@ import { allProducts as catalogProducts, catalog, featuredProducts } from "../da
 import heroImg from "../assets/hero.jpg";
 import printingImg from "../assets/printing.jpg";
 import ledImg from "../assets/led-sign.jpg";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../components/ui/accordion";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,7 +29,12 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Shop custom visiting cards, stickers, flex, banners, signage, labels and more from Morya Printing Point, Kothrud, Pune.",
+          "Custom printing in Pune for visiting cards, stickers, flex banners, vinyl, signage, labels and business stationery from Morya Printing Point, Kothrud.",
+      },
+      {
+        name: "keywords",
+        content:
+          "printing shop in Pune, custom printing Pune, visiting cards Pune, flex printing Pune, sticker printing Pune, vinyl printing Pune, signage printing Kothrud, Morya Printing Point",
       },
     ],
   }),
@@ -97,14 +107,23 @@ function Home() {
 
   return (
     <SiteLayout>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <HeroCarousel />
 
-      <section className="border-b bg-white py-4">
-        <div className="container-x grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Trust icon={Truck} title="Fast local delivery" text="Across Pune & nearby areas" />
-          <Trust icon={ShieldCheck} title="Quality checked" text="Before every handover" />
-          <Trust icon={Sparkles} title="100+ print options" text="Sizes, papers & finishes" />
-          <Trust icon={Headphones} title="Friendly support" text="Call or WhatsApp us" />
+      <section className="bg-white py-10 md:py-14">
+        <div className="container-x grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Trust icon={Truck} title="Fast Printing & Delivery" text="Same-day dispatch across Pune & nearby areas" />
+          <Trust icon={ShieldCheck} title="Premium Print Quality" text="Quality checked before every delivery" />
+          <Trust icon={Sparkles} title="Complete Printing Solution" text="Cards, flyers, banners, stickers & more" />
+          <Trust icon={Headphones} title="Friendly Customer Support" text="Call, WhatsApp or visit our store" />
+        </div>
+      </section>
+
+      <section className="bg-navy py-10 text-white">
+        <div className="container-x grid gap-7 text-center sm:grid-cols-3">
+          <Stat value="10,000+" label="Orders" />
+          <Stat value="2,000+" label="Customers" />
+          <Stat value="200+" label="Products" />
         </div>
       </section>
 
@@ -257,8 +276,148 @@ function Home() {
         </div>
       </section>
 
+      <ReviewsWall />
+
+      {/* Legacy compact review card retained here only for reference.
+      <section className="bg-soft py-14">
+        <div className="container-x grid gap-8 lg:grid-cols-[.85fr_1.15fr] lg:items-center">
+          <a
+            href="https://share.google/Zoo4vsRMy8dQrC9Cc"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-2xl bg-white p-8 text-center shadow-[0_18px_50px_-28px_rgba(11,31,58,.5)] transition hover:-translate-y-1"
+          >
+            <div className="mx-auto flex w-fit gap-1 text-orange">
+              {Array.from({ length: 5 }).map((_, index) => <Star key={index} className="h-5 w-5 fill-current" />)}
+            </div>
+            <div className="mt-4 font-display text-5xl font-semibold text-navy">4.9</div>
+            <p className="mt-2 text-sm font-semibold text-muted-foreground">from 200+ Google reviews</p>
+            <span className="mt-5 inline-block text-sm font-semibold text-orange">Read our Google reviews →</span>
+          </a>
+          <div>
+            <span className="eyebrow">Loved by local businesses</span>
+            <h2 className="mt-3 section-title">Prints that earn repeat orders.</h2>
+            <p className="mt-4 max-w-xl text-muted-foreground">
+              From quick everyday prints to important brand launches, customers trust Morya for helpful guidance, dependable quality and fast local service.
+            </p>
+          </div>
+        </div>
+      </section> */}
+
+      <section className="container-x py-16">
+        <div className="mb-7">
+          <span className="eyebrow">Need help?</span>
+          <h2 className="mt-3 section-title">Frequently Asked Questions (FAQs)</h2>
+          <p className="mt-3 text-muted-foreground">Quick answers before you place your print order.</p>
+        </div>
+        <div className="grid gap-4 lg:grid-cols-2">
+          {[homeFaqs.slice(0, 6), homeFaqs.slice(6)].map((column, columnIndex) => (
+            <Accordion key={columnIndex} type="single" collapsible className="border border-border bg-white">
+              {column.map((faq, index) => (
+                <AccordionItem key={faq.question} value={`faq-${columnIndex}-${index}`} className="px-5 last:border-b-0">
+                  <AccordionTrigger className="min-h-12 py-3 font-semibold text-navy hover:no-underline">
+                    {faq.question}
+                  </AccordionTrigger>
+                  <AccordionContent className="leading-relaxed text-muted-foreground">{faq.answer}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          ))}
+        </div>
+        <Link to="/faq" className="mt-6 inline-flex text-sm font-semibold text-orange hover:text-navy">View all FAQs <ArrowRight className="ml-1 h-4 w-4" /></Link>
+      </section>
+
       <CTA />
     </SiteLayout>
+  );
+}
+
+const googleBusinessProfile = "https://share.google/mgKsD0HQ5OS26Xewa";
+const googleReviews = [
+  { name: "anil kumar Tvn", rating: 5, text: "Praised dependable service, quality work and helpful support whenever needed." },
+  { name: "Deveshree shinde", rating: 5, text: "Highlighted same-day foam-board delivery, co-operative service and excellent quality." },
+  { name: "Vilas Mulay", rating: 5, text: "Appreciated the technical support, product range and quality of flex and pamphlet printing." },
+  { name: "yasser Shaikh", rating: 5, text: "Shared positive feedback about the service and the quality of the finished work." },
+  { name: "Ram Kelkar", rating: 5, text: "Valued print quality, timely work, reasonable pricing and friendly communication." },
+  { name: "Mansi Makhi", rating: 4, text: "Mentioned quality printing, useful design guidance, quick delivery and polite staff." },
+  { name: "Avinash Ramgude", rating: 5, text: "Noted good quality, material guidance, reasonable rates and timely sticker printing." },
+  { name: "Amit Phadke", rating: 5, text: "Recommended the design skills, customer-first approach and end-to-end printing support." },
+  { name: "Subodh Vaidya", rating: 5, text: "Highlighted a fast response, quick delivery and reasonable pricing." },
+];
+
+function ReviewsWall() {
+  return (
+    <section className="overflow-hidden bg-[#f8fafc] py-16 md:py-20">
+      <div className="container-x grid gap-10 lg:grid-cols-[minmax(250px,.7fr)_minmax(0,1.7fr)] lg:gap-14">
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          <span className="eyebrow">Google reviews</span>
+          <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] text-navy sm:text-5xl">
+            True journeys.<br />
+            True transformation.
+          </h2>
+          <a
+            href={googleBusinessProfile}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-border transition hover:-translate-y-0.5 hover:shadow-md"
+          >
+            <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-2xl font-bold text-[#4285F4]">G</span>
+            <span className="text-left">
+              <span className="flex items-center gap-1 font-display text-2xl font-semibold text-navy">
+                4.8 <Star className="h-5 w-5 fill-[#fbbc04] text-[#fbbc04]" />
+              </span>
+              <span className="text-sm text-muted-foreground">from 223 Google reviews</span>
+            </span>
+          </a>
+          <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
+            Read verified customer feedback directly on our Google Business Profile.
+          </p>
+          <a
+            href={googleBusinessProfile}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-5 inline-flex items-center text-sm font-semibold text-orange transition hover:text-navy"
+          >
+            View all Google reviews <ArrowRight className="ml-1.5 h-4 w-4" />
+          </a>
+        </div>
+
+        <div className="max-h-[558px] overflow-y-auto pr-3 [scrollbar-color:#f97316_#e2e8f0] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-orange [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200 [&::-webkit-scrollbar]:w-2">
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {googleReviews.map((review, index) => (
+            <a
+              key={review.name}
+              href={googleBusinessProfile}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Read ${review.name}'s Google review for Morya Printing Point`}
+              className="flex h-[174px] flex-col overflow-hidden rounded-2xl bg-white p-5 shadow-[0_12px_30px_-24px_rgba(11,31,58,.55)] ring-1 ring-slate-100 transition duration-200 hover:-translate-y-1 hover:shadow-lg"
+            >
+              <div className="flex gap-1 text-[#fbbc04]">
+                {Array.from({ length: 5 }).map((_, starIndex) => (
+                  <Star key={starIndex} className={`h-4 w-4 ${starIndex < review.rating ? "fill-current" : "fill-slate-200 text-slate-200"}`} />
+                ))}
+              </div>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
+              <span className="mt-auto pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                {review.name}
+              </span>
+            </a>
+          ))}
+          <a
+            href={googleBusinessProfile}
+            target="_blank"
+            rel="noreferrer"
+            className="flex h-[174px] flex-col justify-between rounded-2xl bg-navy p-5 text-white shadow-[0_12px_30px_-24px_rgba(11,31,58,.55)] transition duration-200 hover:-translate-y-1"
+          >
+            <span className="text-sm font-semibold text-orange">More customer feedback</span>
+            <span className="font-display text-xl font-semibold leading-tight">Read all 223 Google reviews</span>
+            <span className="inline-flex items-center text-sm font-semibold">Open Google <ArrowRight className="ml-1.5 h-4 w-4" /></span>
+          </a>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -301,10 +460,6 @@ function HeroCarousel() {
     return () => window.clearInterval(timer);
   }, []);
 
-  const goToPrevious = () =>
-    setActiveSlide((current) => (current - 1 + heroSlides.length) % heroSlides.length);
-  const goToNext = () => setActiveSlide((current) => (current + 1) % heroSlides.length);
-
   return (
     <section className="border-b bg-white">
       <div className="relative min-h-[520px] overflow-hidden bg-navy md:min-h-[560px]">
@@ -322,9 +477,9 @@ function HeroCarousel() {
         ))}
 
         <div className="container-x relative z-10 flex min-h-[520px] items-end py-8 md:min-h-[560px] md:items-center md:py-14">
-          <div className="max-w-2xl rounded-2xl border border-white/15 bg-white/95 p-5 shadow-2xl backdrop-blur md:p-8">
+          <div className="max-w-2xl rounded-2xl border border-white/20 bg-white/80 p-5 shadow-2xl backdrop-blur md:p-8">
             <span className="eyebrow">{heroSlides[activeSlide].eyebrow}</span>
-            <h1 className="mt-3 font-display text-3xl font-extrabold leading-tight text-navy md:text-5xl">
+            <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-navy md:text-5xl">
               {heroSlides[activeSlide].title}
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -347,23 +502,6 @@ function HeroCarousel() {
             </div>
           </div>
         </div>
-
-        <button
-          type="button"
-          onClick={goToPrevious}
-          className="absolute left-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow-lg transition hover:bg-orange hover:text-white md:flex"
-          aria-label="Previous banner"
-        >
-          <ChevronLeft className="h-5 w-5" />
-        </button>
-        <button
-          type="button"
-          onClick={goToNext}
-          className="absolute right-3 top-1/2 z-20 hidden h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-navy shadow-lg transition hover:bg-orange hover:text-white md:flex"
-          aria-label="Next banner"
-        >
-          <ChevronRight className="h-5 w-5" />
-        </button>
 
         <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-2">
           {heroSlides.map((slide, index) => (
@@ -415,7 +553,7 @@ function ProductSection({
               className="group overflow-hidden rounded-lg border bg-white transition hover:-translate-y-1 hover:border-cyan hover:shadow-[0_18px_34px_-24px_rgba(11,31,58,.55)]"
             >
               <div
-                className={`${categoryCards ? "aspect-[4/3]" : "aspect-square"} relative overflow-hidden bg-soft`}
+                className="aspect-[5/4] relative overflow-hidden bg-soft"
               >
                 <img
                   src={product.image}
@@ -424,7 +562,7 @@ function ProductSection({
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 />
                 {!categoryCards && (
-                  <span className="absolute left-2 top-2 rounded bg-cyan px-2 py-1 text-[10px] font-extrabold uppercase text-navy">
+                  <span className="absolute left-2 top-2 rounded bg-navy px-2 py-1 text-[10px] font-semibold uppercase text-white">
                     {product.tag}
                   </span>
                 )}
@@ -486,15 +624,53 @@ function PromoBand({
 
 function Trust({ icon: Icon, title, text }: { icon: typeof Truck; title: string; text: string }) {
   return (
-    <div className="flex items-center gap-3 rounded-lg border bg-white p-3">
-      <Icon className="h-5 w-5 text-orange" />
-      <div>
-        <div className="text-sm font-extrabold text-navy">{title}</div>
-        <div className="text-xs text-muted-foreground">{text}</div>
+    <div className="rounded-[1.35rem] bg-[#f9d6cb] p-3 text-center">
+      <div className="flex min-h-12 items-center justify-center px-2 text-lg font-bold leading-tight text-navy md:min-h-14">
+        {title}
+      </div>
+      <div className="flex min-h-[178px] flex-col items-center justify-center rounded-[1.05rem] bg-[#f47a24] px-5 py-6 text-white shadow-inner">
+        <span className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-white/20 ring-1 ring-white/45">
+          <Icon className="h-6 w-6" strokeWidth={2.25} />
+        </span>
+        <p className="text-xl font-medium italic leading-snug md:text-2xl">{text}</p>
       </div>
     </div>
   );
 }
+
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <div>
+      <div className="font-display text-4xl font-semibold text-white md:text-5xl">{value}</div>
+      <div className="mt-1 text-xs font-semibold uppercase tracking-[.16em] text-white/70">{label}</div>
+    </div>
+  );
+}
+
+const homeFaqs = [
+  { question: "What services does Morya Printing Point offer?", answer: "Morya Printing Point offers visiting cards, flyers, brochures, letterheads, envelopes, menu cards, ID cards, flex printing, vinyl printing, one-way vision, frosted vinyl, transparent vinyl, banners, stickers, certificates, invitations and customised business printing solutions." },
+  { question: "Do you provide same-day printing?", answer: "Yes. We offer same-day printing for selected products such as standard visiting cards, flyers and document printing, depending on order quantity and artwork approval." },
+  { question: "Can I order a single print or small quantity?", answer: "Yes. We accept both single-piece and bulk printing orders. Whether you need one document or thousands of printed materials, we can help." },
+  { question: "What file formats do you accept?", answer: "We accept PDF, AI, CDR, PSD, JPG, PNG and other high-resolution print-ready files. For the best print quality, files should be prepared in CMYK colour mode." },
+  { question: "What are your most popular printing products?", answer: "Popular products include visiting cards, flyers, brochures, vinyl printing, flex banners, letterheads, ID cards, stickers, menu cards and wedding invitations." },
+  { question: "Do you print custom-sized products?", answer: "Yes. We provide custom sizes and finishing options based on your requirements. Contact us for personalised printing solutions." },
+  { question: "How long does printing take?", answer: "Turnaround time depends on the product and quantity. Many standard jobs are completed within the same day, while larger or customised orders may take one to three business days." },
+  { question: "Do you deliver printed products?", answer: "Yes. We offer local delivery and can arrange shipping across India. Delivery charges and timelines depend on your location and order size." },
+  { question: "Why choose Morya Printing Point?", answer: "Morya Printing Point is known for high-quality printing, affordable pricing, fast turnaround, professional designs, premium materials and excellent customer support for businesses and individuals." },
+  { question: "Do you offer bulk-order discounts?", answer: "Yes. We provide special pricing for bulk printing orders. Contact us with your requirements for a customised quotation." },
+  { question: "What payment methods do you accept?", answer: "We accept cash, UPI, bank transfer, credit and debit cards, and other digital payment methods. GST is applicable as per government regulations." },
+  { question: "Do you print for businesses, schools and events?", answer: "Absolutely. We provide customised printing solutions for businesses, educational institutions, corporate events, exhibitions, restaurants, retail stores, weddings, birthdays and other special occasions." },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: homeFaqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: { "@type": "Answer", text: faq.answer },
+  })),
+};
 
 function InfoBlock({ title, text }: { title: string; text: string }) {
   return (

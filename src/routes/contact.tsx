@@ -117,6 +117,7 @@ function Contact() {
             icon={MapPin}
             title="Visit us"
             body="Shop No. 3, Jeet Building, near Jeet Ground, Lokmanya Colony, Kothrud, Pune 411038"
+            href="https://maps.app.goo.gl/TSBbNMXqBig85rtJ9"
           />
           <InfoCard
             icon={Phone}
@@ -135,7 +136,7 @@ function Contact() {
             icon={ExternalLink}
             title="Google Business Profile"
             body="View profile, directions, reviews and business details"
-            href="https://share.google/fzqShCOs399ka2PWD"
+            href="https://share.google/3stt5fmHZPr0ByYUY"
           />
           <InfoCard
             icon={Mail}
@@ -147,9 +148,11 @@ function Contact() {
           <div className="rounded-2xl overflow-hidden border shadow-sm h-64">
             <iframe
               title="Location"
-              src="https://www.google.com/maps?q=Jeet+Building+Kothrud+Pune&output=embed"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1891.7200032502062!2d73.8046583!3d18.5090081!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc2bfc1fe039b07%3A0x943f49aea30028!2sMorya%20Printing%20Point%20%26%20Flex%20Printing!5e0!3m2!1sen!2sin!4v1784182046182!5m2!1sen!2sin"
               className="w-full h-full border-0"
               loading="lazy"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
             />
           </div>
         </div>

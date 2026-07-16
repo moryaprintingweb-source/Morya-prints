@@ -14,11 +14,12 @@ import { PageHero } from "../components/site/PageHero";
 import { allProducts, catalog } from "../data/catalog";
 import { useCart } from "../lib/cart";
 
-type ProductSearch = { category?: string };
+type ProductSearch = { category?: string; search?: string };
 
 export const Route = createFileRoute("/products")({
   validateSearch: (search: Record<string, unknown>): ProductSearch => ({
     category: typeof search.category === "string" ? search.category : undefined,
+    search: typeof search.search === "string" ? search.search : undefined,
   }),
   head: () => ({
     meta: [
@@ -34,14 +35,14 @@ export const Route = createFileRoute("/products")({
 });
 
 function Products() {
-  const { category: initialCategory } = Route.useSearch();
+  const { category: initialCategory, search: initialSearch } = Route.useSearch();
   const [active, setActive] = useState(
     initialCategory && catalog.some((item) => item.slug === initialCategory)
       ? initialCategory
       : "all",
   );
   const { addItem } = useCart();
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialSearch ?? "");
   const products = useMemo(
     () =>
       allProducts.filter(
@@ -126,7 +127,7 @@ function Products() {
                 className="group overflow-hidden rounded-2xl border bg-white transition hover:-translate-y-1 hover:shadow-xl"
               >
                 <Link to="/products/$slug" params={{ slug: product.slug }}>
-                  <div className="relative aspect-[4/3] overflow-hidden bg-soft">
+                  <div className="relative aspect-[5/4] overflow-hidden bg-soft">
                     <img
                       src={product.image}
                       alt={product.name}
