@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
@@ -111,7 +111,7 @@ function Home() {
       <HeroCarousel />
 
       <section className="bg-white py-10 md:py-14">
-        <div className="container-x grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="container-x grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <Trust icon={Truck} title="Fast Printing & Delivery" text="Same-day dispatch across Pune & nearby areas" />
           <Trust icon={ShieldCheck} title="Premium Print Quality" text="Quality checked before every delivery" />
           <Trust icon={Sparkles} title="Complete Printing Solution" text="Cards, flyers, banners, stickers & more" />
@@ -624,24 +624,62 @@ function PromoBand({
 
 function Trust({ icon: Icon, title, text }: { icon: typeof Truck; title: string; text: string }) {
   return (
-    <div className="rounded-[1.35rem] bg-[#f9d6cb] p-3 text-center">
-      <div className="flex min-h-12 items-center justify-center px-2 text-lg font-bold leading-tight text-navy md:min-h-14">
+    <div className="rounded-2xl bg-[#f9d6cb] p-2.5 text-center sm:rounded-[1.35rem] sm:p-3">
+      <div className="flex min-h-10 items-center justify-center px-1 text-sm font-semibold leading-tight text-navy sm:min-h-12 sm:px-2 sm:text-base lg:min-h-14 lg:text-lg">
         {title}
       </div>
-      <div className="flex min-h-[178px] flex-col items-center justify-center rounded-[1.05rem] bg-[#f47a24] px-5 py-6 text-white shadow-inner">
-        <span className="mb-4 grid h-11 w-11 place-items-center rounded-full bg-white/20 ring-1 ring-white/45">
-          <Icon className="h-6 w-6" strokeWidth={2.25} />
+      <div className="flex min-h-[124px] flex-col items-center justify-center rounded-xl bg-[#f47a24] px-2.5 py-4 text-white shadow-inner sm:min-h-[150px] sm:px-4 sm:py-5 lg:min-h-[178px] lg:rounded-[1.05rem] lg:px-5 lg:py-6">
+        <span className="mb-2.5 grid h-8 w-8 place-items-center rounded-full bg-white/20 ring-1 ring-white/45 sm:mb-3 sm:h-9 sm:w-9 lg:mb-4 lg:h-11 lg:w-11">
+          <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" strokeWidth={2.25} />
         </span>
-        <p className="text-xl font-medium italic leading-snug md:text-2xl">{text}</p>
+        <p className="text-sm font-medium italic leading-snug sm:text-base lg:text-2xl">{text}</p>
       </div>
     </div>
   );
 }
 
 function Stat({ value, label }: { value: string; label: string }) {
+  const counterRef = useRef<HTMLDivElement>(null);
+  const [displayValue, setDisplayValue] = useState(0);
+  const target = Number(value.replace(/[^0-9]/g, ""));
+
+  useEffect(() => {
+    const element = counterRef.current;
+    if (!element) return;
+
+    const animate = () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setDisplayValue(target);
+        return;
+      }
+
+      const duration = 1400;
+      const startTime = performance.now();
+      const tick = (time: number) => {
+        const progress = Math.min((time - startTime) / duration, 1);
+        const easedProgress = 1 - Math.pow(1 - progress, 4);
+        setDisplayValue(Math.round(target * easedProgress));
+        if (progress < 1) requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          animate();
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.45 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [target]);
+
   return (
-    <div>
-      <div className="font-display text-4xl font-semibold text-white md:text-5xl">{value}</div>
+    <div ref={counterRef}>
+      <div className="font-display text-4xl font-semibold text-white md:text-5xl">{displayValue.toLocaleString()}+</div>
       <div className="mt-1 text-xs font-semibold uppercase tracking-[.16em] text-white/70">{label}</div>
     </div>
   );
