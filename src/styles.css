@@ -66,6 +66,29 @@
   --ring: #00aeef;
 }
 
+@keyframes reviews-scroll-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+
+.reviews-marquee-track {
+  animation: reviews-scroll-up 22s linear infinite;
+  will-change: transform;
+}
+
+.reviews-marquee-track-2 { animation-duration: 27s; animation-delay: -8s; }
+.reviews-marquee-track-3 { animation-duration: 24s; animation-delay: -14s; }
+
+.reviews-marquee {
+  mask-image: linear-gradient(to bottom, transparent, black 8%, black 92%, transparent);
+}
+
+.reviews-marquee:hover .reviews-marquee-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reviews-marquee-track { animation: none; }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);

@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -21,6 +21,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
+import { CircularGallery } from "../components/gallery/CircularGallery";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -127,16 +128,12 @@ function Home() {
         </div>
       </section>
 
-      <ProductSection
-        title="Explore all categories"
-        action="View all"
-        products={highlightedCategories.map((category, index) => ({
+      <CategoryGallery
+        categories={highlightedCategories.map((category, index) => ({
           name: category!.name,
           image: categoryImage(category!, index),
           slug: category!.slug,
-          tag: "5 products",
         }))}
-        categoryCards
       />
 
       <ProductSection
@@ -332,92 +329,111 @@ function Home() {
   );
 }
 
+function CategoryGallery({ categories }: { categories: { name: string; image: string; slug: string }[] }) {
+  const navigate = useNavigate();
+
+  return (
+    <section className="overflow-hidden bg-[#fffdf4] py-10 md:py-12">
+      <div className="container-x mb-5 flex items-center justify-between gap-4">
+        <h2 className="font-display text-2xl font-bold text-navy">Explore all categories</h2>
+        <Link to="/products" className="text-sm font-bold text-navy hover:text-orange">
+          View all <ArrowRight className="ml-1 inline h-4 w-4" />
+        </Link>
+      </div>
+      <div className="h-[310px] sm:h-[350px] md:h-[410px]">
+        <CircularGallery
+          items={categories.map((category) => ({ image: category.image, text: category.name }))}
+          onItemClick={(index) => navigate({ to: "/products", search: { category: categories[index].slug } })}
+        />
+      </div>
+      <p className="container-x mt-3 text-center text-xs font-semibold text-muted-foreground sm:text-sm">
+        Drag, scroll, or use the arrow keys to browse categories.
+      </p>
+      <nav className="container-x mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Browse categories">
+        {categories.map((category) => (
+          <Link
+            key={category.slug}
+            to="/products"
+            search={{ category: category.slug }}
+            className="text-xs font-bold text-navy underline decoration-orange/60 underline-offset-4 hover:text-orange"
+          >
+            {category.name}
+          </Link>
+        ))}
+      </nav>
+    </section>
+  );
+}
+
 const googleBusinessProfile = "https://share.google/mgKsD0HQ5OS26Xewa";
 const googleReviews = [
-  { name: "anil kumar Tvn", rating: 5, text: "Praised dependable service, quality work and helpful support whenever needed." },
-  { name: "Deveshree shinde", rating: 5, text: "Highlighted same-day foam-board delivery, co-operative service and excellent quality." },
-  { name: "Vilas Mulay", rating: 5, text: "Appreciated the technical support, product range and quality of flex and pamphlet printing." },
-  { name: "yasser Shaikh", rating: 5, text: "Shared positive feedback about the service and the quality of the finished work." },
-  { name: "Ram Kelkar", rating: 5, text: "Valued print quality, timely work, reasonable pricing and friendly communication." },
-  { name: "Mansi Makhi", rating: 4, text: "Mentioned quality printing, useful design guidance, quick delivery and polite staff." },
-  { name: "Avinash Ramgude", rating: 5, text: "Noted good quality, material guidance, reasonable rates and timely sticker printing." },
-  { name: "Amit Phadke", rating: 5, text: "Recommended the design skills, customer-first approach and end-to-end printing support." },
-  { name: "Subodh Vaidya", rating: 5, text: "Highlighted a fast response, quick delivery and reasonable pricing." },
+  { name: "Anil Kumar", rating: 5, title: "Excellent print quality", text: "Dependable service, quality work and helpful support whenever needed." },
+  { name: "Deveshree Shinde", rating: 5, title: "Quick and helpful", text: "Same-day foam-board delivery with co-operative service and excellent quality." },
+  { name: "Vilas Mulay", rating: 5, title: "Great technical support", text: "Helpful guidance, a strong product range and quality flex and pamphlet printing." },
+  { name: "Yasser Shaikh", rating: 5, title: "Very professional", text: "Great service and quality in the finished work." },
+  { name: "Ram Kelkar", rating: 5, title: "Happy with the service", text: "Good print quality, timely work, reasonable pricing and friendly communication." },
+  { name: "Mansi Makhi", rating: 4, title: "Good experience", text: "Useful design guidance, quick delivery and polite staff." },
+  { name: "Avinash Ramgude", rating: 5, title: "Reliable printing partner", text: "Good quality, material guidance, reasonable rates and timely sticker printing." },
+  { name: "Amit Phadke", rating: 5, title: "Highly recommended", text: "Strong design skills and customer-first, end-to-end printing support." },
+  { name: "Subodh Vaidya", rating: 5, title: "Fast response", text: "Quick delivery, fast communication and reasonable pricing." },
 ];
 
 function ReviewsWall() {
+  const reviewColumns = [0, 1, 2].map((column) =>
+    googleReviews.filter((_, index) => index % 3 === column),
+  );
+
   return (
-    <section className="overflow-hidden bg-[#f8fafc] py-16 md:py-20">
-      <div className="container-x grid gap-10 lg:grid-cols-[minmax(250px,.7fr)_minmax(0,1.7fr)] lg:gap-14">
-        <div className="lg:sticky lg:top-28 lg:self-start">
+    <section className="overflow-hidden bg-white py-14 md:py-16">
+      <div className="container-x grid gap-10 lg:grid-cols-[minmax(235px,.62fr)_minmax(0,1.88fr)] lg:items-center lg:gap-14">
+        <div className="lg:self-center">
           <span className="eyebrow">Google reviews</span>
-          <h2 className="mt-4 font-display text-4xl font-semibold leading-[1.05] text-navy sm:text-5xl">
-            True journeys.<br />
-            True transformation.
+          <h2 className="mt-3 font-display text-3xl font-bold leading-[1.02] text-navy sm:text-4xl">
+            True Journeys. True<br />
+            Transformation.
           </h2>
-          <a
-            href={googleBusinessProfile}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-8 inline-flex items-center gap-3 rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-border transition hover:-translate-y-0.5 hover:shadow-md"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-white text-2xl font-bold text-[#4285F4]">G</span>
-            <span className="text-left">
-              <span className="flex items-center gap-1 font-display text-2xl font-semibold text-navy">
-                4.8 <Star className="h-5 w-5 fill-[#fbbc04] text-[#fbbc04]" />
-              </span>
-              <span className="text-sm text-muted-foreground">from 223 Google reviews</span>
+          <a href={googleBusinessProfile} target="_blank" rel="noreferrer" className="mt-4 inline-flex flex-col gap-1 transition hover:opacity-80">
+            <span className="flex items-center gap-1.5 font-display text-lg font-bold text-navy">
+              <span className="text-[#4285f4]">G</span> 4.8 <Star className="h-4 w-4 fill-[#fbbc04] text-[#fbbc04]" />
             </span>
+            <span className="text-[11px] font-medium text-muted-foreground">from 223 Google reviews</span>
           </a>
-          <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted-foreground">
-            Read verified customer feedback directly on our Google Business Profile.
-          </p>
-          <a
-            href={googleBusinessProfile}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-5 inline-flex items-center text-sm font-semibold text-orange transition hover:text-navy"
-          >
-            View all Google reviews <ArrowRight className="ml-1.5 h-4 w-4" />
+          <a href={googleBusinessProfile} target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center text-sm font-bold text-orange transition hover:text-navy">
+            Read all reviews <ArrowRight className="ml-1.5 h-4 w-4" />
           </a>
         </div>
-
-        <div className="max-h-[558px] overflow-y-auto pr-3 [scrollbar-color:#f97316_#e2e8f0] [scrollbar-width:thin] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-orange [&::-webkit-scrollbar-track]:rounded-full [&::-webkit-scrollbar-track]:bg-slate-200 [&::-webkit-scrollbar]:w-2">
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {googleReviews.map((review, index) => (
-            <a
-              key={review.name}
-              href={googleBusinessProfile}
-              target="_blank"
-              rel="noreferrer"
-              aria-label={`Read ${review.name}'s Google review for Morya Printing Point`}
-              className="flex h-[174px] flex-col overflow-hidden rounded-2xl bg-white p-5 shadow-[0_12px_30px_-24px_rgba(11,31,58,.55)] ring-1 ring-slate-100 transition duration-200 hover:-translate-y-1 hover:shadow-lg"
-            >
-              <div className="flex gap-1 text-[#fbbc04]">
-                {Array.from({ length: 5 }).map((_, starIndex) => (
-                  <Star key={starIndex} className={`h-4 w-4 ${starIndex < review.rating ? "fill-current" : "fill-slate-200 text-slate-200"}`} />
-                ))}
-              </div>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">{review.text}</p>
-              <span className="mt-auto pt-5 text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                {review.name}
-              </span>
-            </a>
+        <div className="reviews-marquee grid h-[390px] grid-cols-1 gap-4 overflow-hidden sm:grid-cols-2 lg:h-[430px] lg:grid-cols-3">
+          {reviewColumns.map((reviews, columnIndex) => (
+            <div key={columnIndex} className={`reviews-marquee-track reviews-marquee-track-${columnIndex + 1}`}>
+              {[...reviews, ...reviews].map((review, index) => (
+                <ReviewCard key={`${review.name}-${index}`} review={review} />
+              ))}
+            </div>
           ))}
-          <a
-            href={googleBusinessProfile}
-            target="_blank"
-            rel="noreferrer"
-            className="flex h-[174px] flex-col justify-between rounded-2xl bg-navy p-5 text-white shadow-[0_12px_30px_-24px_rgba(11,31,58,.55)] transition duration-200 hover:-translate-y-1"
-          >
-            <span className="text-sm font-semibold text-orange">More customer feedback</span>
-            <span className="font-display text-xl font-semibold leading-tight">Read all 223 Google reviews</span>
-            <span className="inline-flex items-center text-sm font-semibold">Open Google <ArrowRight className="ml-1.5 h-4 w-4" /></span>
-          </a>
-          </div>
         </div>
       </div>
     </section>
+  );
+}
+
+function ReviewCard({ review }: { review: (typeof googleReviews)[number] }) {
+  return (
+    <a
+      href={googleBusinessProfile}
+      target="_blank"
+      rel="noreferrer"
+      aria-label={`Read ${review.name}'s Google review for Morya Printing Point`}
+      className="mb-4 flex min-h-[148px] break-inside-avoid flex-col rounded-xl bg-white p-5 shadow-[0_10px_24px_-22px_rgba(11,31,58,.55)] ring-1 ring-slate-100 transition hover:shadow-md"
+    >
+      <div className="flex gap-0.5 text-[#fbbc04]">
+        {Array.from({ length: 5 }).map((_, starIndex) => (
+          <Star key={starIndex} className={`h-3 w-3 ${starIndex < review.rating ? "fill-current" : "fill-slate-200 text-slate-200"}`} />
+        ))}
+      </div>
+      <h3 className="mt-3 text-sm font-extrabold text-navy">{review.title}</h3>
+      <p className="mt-2 text-xs leading-relaxed text-muted-foreground">{review.text}</p>
+      <span className="mt-auto pt-4 text-[11px] font-bold text-navy">{review.name}</span>
+    </a>
   );
 }
 
@@ -624,15 +640,15 @@ function PromoBand({
 
 function Trust({ icon: Icon, title, text }: { icon: typeof Truck; title: string; text: string }) {
   return (
-    <div className="rounded-2xl bg-[#f9d6cb] p-2.5 text-center sm:rounded-[1.35rem] sm:p-3">
-      <div className="flex min-h-10 items-center justify-center px-1 text-sm font-semibold leading-tight text-navy sm:min-h-12 sm:px-2 sm:text-base lg:min-h-14 lg:text-lg">
+    <div className="rounded-2xl border border-border bg-white p-2.5 text-center shadow-[0_14px_32px_-26px_rgba(30,58,138,.55)] sm:rounded-[1.35rem] sm:p-3">
+      <div className="flex min-h-11 items-center justify-center px-1 text-base font-extrabold leading-tight text-navy sm:min-h-14 sm:px-2 sm:text-lg lg:min-h-16 lg:text-xl">
         {title}
       </div>
-      <div className="flex min-h-[124px] flex-col items-center justify-center rounded-xl bg-[#f47a24] px-2.5 py-4 text-white shadow-inner sm:min-h-[150px] sm:px-4 sm:py-5 lg:min-h-[178px] lg:rounded-[1.05rem] lg:px-5 lg:py-6">
-        <span className="mb-2.5 grid h-8 w-8 place-items-center rounded-full bg-white/20 ring-1 ring-white/45 sm:mb-3 sm:h-9 sm:w-9 lg:mb-4 lg:h-11 lg:w-11">
+      <div className="flex min-h-[124px] flex-col items-center justify-center rounded-xl bg-[#eef5ff] px-2.5 py-4 text-navy sm:min-h-[150px] sm:px-4 sm:py-5 lg:min-h-[178px] lg:rounded-[1.05rem] lg:px-5 lg:py-6">
+        <span className="mb-2.5 grid h-8 w-8 place-items-center rounded-full bg-orange text-white shadow-[0_8px_18px_-10px_rgba(249,115,22,.9)] sm:mb-3 sm:h-9 sm:w-9 lg:mb-4 lg:h-11 lg:w-11">
           <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" strokeWidth={2.25} />
         </span>
-        <p className="text-sm font-medium italic leading-snug sm:text-base lg:text-2xl">{text}</p>
+        <p className="text-xs font-semibold leading-snug text-navy/80 sm:text-sm lg:text-base">{text}</p>
       </div>
     </div>
   );
