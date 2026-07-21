@@ -1,8 +1,10 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
   Check,
+  ChevronLeft,
+  ChevronRight,
   Headphones,
   ShieldCheck,
   Sparkles,
@@ -21,7 +23,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
-import { CircularGallery } from "../components/gallery/CircularGallery";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -128,11 +129,12 @@ function Home() {
         </div>
       </section>
 
-      <CategoryGallery
+      <CategoryCarousel
         categories={highlightedCategories.map((category, index) => ({
           name: category!.name,
           image: categoryImage(category!, index),
           slug: category!.slug,
+          tag: "5 products",
         }))}
       />
 
@@ -329,42 +331,6 @@ function Home() {
   );
 }
 
-function CategoryGallery({ categories }: { categories: { name: string; image: string; slug: string }[] }) {
-  const navigate = useNavigate();
-
-  return (
-    <section className="overflow-hidden bg-[#fffdf4] py-10 md:py-12">
-      <div className="container-x mb-5 flex items-center justify-between gap-4">
-        <h2 className="font-display text-2xl font-bold text-navy">Explore all categories</h2>
-        <Link to="/products" className="text-sm font-bold text-navy hover:text-orange">
-          View all <ArrowRight className="ml-1 inline h-4 w-4" />
-        </Link>
-      </div>
-      <div className="h-[310px] sm:h-[350px] md:h-[410px]">
-        <CircularGallery
-          items={categories.map((category) => ({ image: category.image, text: category.name }))}
-          onItemClick={(index) => navigate({ to: "/products", search: { category: categories[index].slug } })}
-        />
-      </div>
-      <p className="container-x mt-3 text-center text-xs font-semibold text-muted-foreground sm:text-sm">
-        Drag, scroll, or use the arrow keys to browse categories.
-      </p>
-      <nav className="container-x mt-3 flex flex-wrap justify-center gap-x-4 gap-y-2" aria-label="Browse categories">
-        {categories.map((category) => (
-          <Link
-            key={category.slug}
-            to="/products"
-            search={{ category: category.slug }}
-            className="text-xs font-bold text-navy underline decoration-orange/60 underline-offset-4 hover:text-orange"
-          >
-            {category.name}
-          </Link>
-        ))}
-      </nav>
-    </section>
-  );
-}
-
 const googleBusinessProfile = "https://share.google/mgKsD0HQ5OS26Xewa";
 const googleReviews = [
   { name: "Anil Kumar", rating: 5, title: "Excellent print quality", text: "Dependable service, quality work and helpful support whenever needed." },
@@ -532,6 +498,83 @@ function HeroCarousel() {
             />
           ))}
         </div>
+      </div>
+    </section>
+  );
+}
+
+function CategoryCarousel({
+  categories,
+}: {
+  categories: { name: string; image: string; slug: string; tag: string }[];
+}) {
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const move = (direction: number) => {
+    carouselRef.current?.scrollBy({ left: direction * 300, behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+    const handleWheel = (event: globalThis.WheelEvent) => {
+      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      const maxScrollLeft = carousel.scrollWidth - carousel.clientWidth;
+      const canMoveForward = event.deltaY > 0 && carousel.scrollLeft < maxScrollLeft - 1;
+      const canMoveBackward = event.deltaY < 0 && carousel.scrollLeft > 1;
+      if (!canMoveForward && !canMoveBackward) return;
+      event.preventDefault();
+      carousel.scrollLeft += event.deltaY * 0.8;
+    };
+    carousel.addEventListener("wheel", handleWheel, { passive: false });
+    return () => carousel.removeEventListener("wheel", handleWheel);
+  }, []);
+
+  return (
+    <section className="container-x py-10 md:py-12">
+      <div className="mb-5 flex items-center justify-between gap-4">
+        <h2 className="font-display text-2xl font-bold text-navy">Explore all categories</h2>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => move(-1)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-navy transition hover:border-orange hover:text-orange"
+            aria-label="Previous categories"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => move(1)}
+            className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-navy transition hover:border-orange hover:text-orange"
+            aria-label="Next categories"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+          <Link to="/products" className="ml-2 text-sm font-bold text-navy hover:text-orange">
+            View all <ArrowRight className="ml-1 inline h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+      <div
+        ref={carouselRef}
+        className="flex snap-x snap-proximity gap-4 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {categories.map((category) => (
+          <Link
+            key={category.slug}
+            to="/products"
+            search={{ category: category.slug }}
+            className="group w-[78%] shrink-0 snap-start overflow-hidden rounded-lg border bg-white transition hover:-translate-y-1 hover:border-cyan hover:shadow-[0_18px_34px_-24px_rgba(11,31,58,.55)] sm:w-[260px] lg:w-[280px]"
+          >
+            <div className="relative aspect-[5/4] overflow-hidden bg-soft">
+              <img src={category.image} alt={category.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+            </div>
+            <div className="p-3">
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-orange">{category.tag}</div>
+              <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-snug text-navy">{category.name}</h3>
+            </div>
+          </Link>
+        ))}
       </div>
     </section>
   );

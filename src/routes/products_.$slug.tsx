@@ -9,10 +9,9 @@ import {
   Star,
   Truck,
   Upload,
-  Images,
   ChevronDown,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { allProducts, findProductBySlug } from "../data/catalog";
 import { useCart } from "../lib/cart";
@@ -44,8 +43,17 @@ function ProductDetail() {
   const [activeDetailTab, setActiveDetailTab] = useState<
     "description" | "specifications" | "other-information"
   >("description");
-  const [deliverySpeed, setDeliverySpeed] = useState("Standard delivery");
-  const [finish, setFinish] = useState("Matte");
+  const [cardType, setCardType] = useState("Standard Cards");
+  const [material, setMaterial] = useState("300 GSM Art Card");
+  const [cornerType, setCornerType] = useState("Square Corners");
+  const [orientation, setOrientation] = useState("Landscape");
+  const [selectedPrice, setSelectedPrice] = useState(
+    product?.singleSidePrice
+      ? `Single Side - Rs. ${product.singleSidePrice.split("/")[0].trim()}`
+      : product?.bothSidePrice
+        ? `Both Side - Rs. ${product.bothSidePrice.split("/")[0].trim()}`
+        : "",
+  );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
@@ -80,10 +88,20 @@ function ProductDetail() {
   };
   const mrp = Math.round(product.startingAt * 1.18);
   const discount = Math.max(5, Math.round(((mrp - product.startingAt) / mrp) * 100));
+  const priceOptions = [
+    ...(product.singleSidePrice ?? "").split("/").filter(Boolean).map((price) => ({
+      label: `Single Side - Rs. ${price.trim()}`,
+      value: `Single Side - Rs. ${price.trim()}`,
+    })),
+    ...(product.bothSidePrice ?? "").split("/").filter(Boolean).map((price) => ({
+      label: `Both Side - Rs. ${price.trim()}`,
+      value: `Both Side - Rs. ${price.trim()}`,
+    })),
+  ];
   const buyMessage = encodeURIComponent(
-    `Hello Morya Printing Point, I want to order ${product.name}. Quantity: ${quantity}. Delivery: ${deliverySpeed}.${uploadedFile ? ` I have selected artwork: ${uploadedFile.name}` : ""}`,
+    `Hello Morya Printing Point, I want to order ${product.name}. Card type: ${cardType}. Material: ${material}. Corners: ${cornerType}. Orientation: ${orientation}. Selected price: ${selectedPrice}. Quantity: ${quantity}.${uploadedFile ? ` I have selected artwork: ${uploadedFile.name}` : ""}`,
   );
-  const quantityOptions = [100, 200, 500, 1000, 2000];
+  const quantityOptions = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
   const addProduct = () =>
     addItem(
@@ -110,7 +128,7 @@ function ProductDetail() {
           <span className="font-semibold text-navy">{product.name}</span>
         </nav>
         <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-          <div>
+          <div className="lg:sticky lg:top-40 lg:self-start">
             <div className="relative rounded-2xl border bg-white p-3">
               <button
                 type="button"
@@ -229,26 +247,22 @@ function ProductDetail() {
               </div>
             )}
 
-            <div className="mt-6 space-y-5">
-              <div>
-                <div className="mb-2 text-sm font-bold text-navy">Delivery speed</div>
-                <div className="grid gap-2 sm:grid-cols-2">
-                {["Standard delivery", "Priority / same-day in Pune"].map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setDeliverySpeed(option)}
-                      className={`rounded-lg border px-4 py-3 text-sm font-semibold transition ${
-                        deliverySpeed === option
-                          ? "border-navy bg-navy text-white"
-                          : "bg-white text-navy hover:border-orange"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="mt-6 space-y-4">
+              <ProductOption label="Card Type" value={cardType} onChange={setCardType}>
+                {["Standard Cards", "Standard Plus Cards", "Textured Cards", "Metallic Cards", "Eco-Friendly Cards", "Non Tearable Cards", "Special Texture Cards", "Transparent Card"].map((option) => <option key={option}>{option}</option>)}
+              </ProductOption>
+              <ProductOption label="Materials" value={material} onChange={setMaterial}>
+                {["300 GSM Art Card", "350 GSM Art Card", "Premium Matte Card", "Textured Card", "Metallic Card"].map((option) => <option key={option}>{option}</option>)}
+              </ProductOption>
+              <ProductOption label="Corner Type" value={cornerType} onChange={setCornerType}>
+                {["Square Corners", "Rounded Corners"].map((option) => <option key={option}>{option}</option>)}
+              </ProductOption>
+              <ProductOption label="Orientation" value={orientation} onChange={setOrientation}>
+                {["Landscape", "Portrait"].map((option) => <option key={option}>{option}</option>)}
+              </ProductOption>
+              <ProductOption label="Select Price" value={selectedPrice} onChange={setSelectedPrice}>
+                {priceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+              </ProductOption>
               <label className="block text-sm font-bold text-navy">
                 Quantity
                 <select
@@ -258,30 +272,14 @@ function ProductDetail() {
                 >
                   {quantityOptions.map((option) => (
                     <option key={option} value={option}>
-                      {option.toLocaleString()} units · from Rs. {Math.round((product.startingAt * option) / 100).toLocaleString()}
+                      {option}{option === 200 ? " - Recommended" : option === 1000 ? " - Best Price" : ""}
                     </option>
                   ))}
                 </select>
               </label>
-              <label className="block text-sm font-bold text-navy">
-                Finish
-                <select
-                  value={finish}
-                  onChange={(event) => setFinish(event.target.value)}
-                  className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-navy"
-                >
-                  <option>Matte</option>
-                  <option>Gloss</option>
-                  <option>Lamination</option>
-                  <option>Custom</option>
-                </select>
-              </label>
             </div>
 
-            <div className="mt-5 grid gap-3 sm:grid-cols-2">
-              <Link to="/gallery" className="flex min-h-12 items-center justify-center gap-2 rounded-lg bg-sky-400 px-4 py-3 text-sm font-bold text-slate-950 transition hover:bg-sky-300">
-                <Images className="h-5 w-5" /> Browse designs
-              </Link>
+            <div className="mt-5">
               <button
                 type="button"
                 onClick={() => uploadInputRef.current?.click()}
@@ -320,11 +318,13 @@ function ProductDetail() {
               </details>
             </div>
 
-            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <Spec label="Print" value="Full Color" />
-              <Spec label="Material" value="Custom" />
-              <Spec label="Finish" value="Premium" />
-              <Spec label="MOQ" value={product.quantity.split("/")[0].trim()} />
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
+              <Spec label="Card Type" value={cardType} />
+              <Spec label="Material" value={material} />
+              <Spec label="Corner Type" value={cornerType} />
+              <Spec label="Orientation" value={orientation} />
+              <Spec label="Selected Price" value={selectedPrice || `Rs. ${product.startingAt}`} />
+              <Spec label="Quantity" value={quantity.toLocaleString()} />
             </div>
 
             <div className="mt-7 flex gap-3">
@@ -332,15 +332,6 @@ function ProductDetail() {
                 <ShoppingBag className="h-4 w-4" /> Add To Cart
               </button>
             </div>
-            <a
-              href={`https://wa.me/918554842103?text=${buyMessage}`}
-              target="_blank"
-              rel="noreferrer"
-              className="btn-primary mt-3 w-full"
-            >
-              Browse design options on WhatsApp
-            </a>
-
             <div className="mt-5 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-2">
                 <Truck className="h-4 w-4 text-orange" /> Estimated delivery after confirmation
@@ -517,6 +508,31 @@ function ProductDetail() {
         </div>
       </section>
     </SiteLayout>
+  );
+}
+
+function ProductOption({
+  label,
+  value,
+  onChange,
+  children,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  children: ReactNode;
+}) {
+  return (
+    <label className="block text-sm font-bold text-navy">
+      {label}
+      <select
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base font-medium text-navy outline-none transition focus:border-navy focus:ring-2 focus:ring-navy/15"
+      >
+        {children}
+      </select>
+    </label>
   );
 }
 
