@@ -26,13 +26,15 @@ import {
 
 const categoryHighlights = [
   "visiting-cards",
-  "apparel",
-  "office-printing",
+  "flyers-pamphlets",
+  "bill-book",
+  "letter-head",
+  "envelope",
   "stickers-labels",
-  "signage-boards",
-  "banners-standees",
-  "packaging",
-  "gifts",
+  "flex-printing",
+  "vinyl-printing",
+  "sunboard",
+  "brochure-book",
 ];
 
 const homeVisuals = [heroImg, printingImg, ledImg];
@@ -54,18 +56,18 @@ const heroSlides = [
     title: "Custom signage, vinyl, flex and display prints.",
     text: "Make your shop, event or campaign look polished from every angle.",
     actions: [
-      { label: "Signage", slug: "signage-boards" },
+      { label: "Sunboard", slug: "sunboard" },
       { label: "Flex Printing", slug: "flex-printing" },
     ],
   },
   {
     image: ledImg,
     eyebrow: "Storefront impact",
-    title: "Boards, standees and packaging that make your brand easy to notice.",
+    title: "Brochures, bill books and branded stationery for everyday business.",
     text: "Choose practical materials, sharp finishing and local support for every print job.",
     actions: [
-      { label: "Packaging", slug: "packaging" },
-      { label: "Banners", slug: "banners-standees" },
+      { label: "Brochure / Book", slug: "brochure-book" },
+      { label: "Bill Book", slug: "bill-book" },
     ],
   },
 ];
@@ -83,7 +85,7 @@ export function Home() {
   const popular = featuredProducts.slice(0, 6);
   const trending = catalogProducts.slice(5, 11);
   const labelsAndPackaging = catalogProducts.filter((item) =>
-    ["stickers-labels", "packaging", "vinyl-printing"].includes(item.category.slug),
+    ["stickers-labels", "vinyl-printing", "envelope"].includes(item.category.slug),
   );
   const exploreMore = catalogProducts.slice(36, 42);
   const newArrivals = catalogProducts.slice(70, 76);
@@ -163,21 +165,21 @@ export function Home() {
           <PromoBand
             image={ledImg}
             eyebrow="Preserve a premium first impression"
-            title="Print polished catalogues, menus, certificates and photo products."
+            title="Print polished brochures, letter heads and bill books."
             actions={[
-              { label: "Photo Prints", slug: "photo-prints" },
-              { label: "Catalogues", slug: "catalogues" },
-              { label: "Certificates", slug: "certificates" },
+              { label: "Brochures", slug: "brochure-book" },
+              { label: "Letter Head", slug: "letter-head" },
+              { label: "Bill Book", slug: "bill-book" },
             ]}
           />
           <PromoBand
             image={printingImg}
             eyebrow="Wear and display your brand"
-            title="Custom T-shirts, caps, boards and standees for teams and events."
+            title="Custom stickers, flex, vinyl and sunboard prints for teams and events."
             actions={[
-              { label: "Apparel", slug: "apparel" },
-              { label: "Display", slug: "display" },
-              { label: "Banners", slug: "banners-standees" },
+              { label: "Stickers", slug: "stickers-labels" },
+              { label: "Flex Printing", slug: "flex-printing" },
+              { label: "Sunboard", slug: "sunboard" },
             ]}
           />
         </div>
@@ -387,15 +389,15 @@ function ReviewCard({ review }: { review: (typeof googleReviews)[number] }) {
 function categoryImage(category: (typeof catalog)[number], index: number) {
   const categorySpecific: Record<string, string> = {
     "visiting-cards": heroImg,
-    apparel: printingImg,
-    "office-printing": category.products[0].image,
+    "bill-book": category.products[0].image,
+    "letter-head": category.products[0].image,
+    envelope: category.products[0].image,
     "stickers-labels": ledImg,
-    "signage-boards": ledImg,
-    "banners-standees": printingImg,
-    packaging: heroImg,
     "flyers-pamphlets": category.products[0].image,
     "vinyl-printing": category.products[0].image,
     "flex-printing": category.products[0].image,
+    sunboard: ledImg,
+    "brochure-book": category.products[0].image,
   };
 
   return categorySpecific[category.slug] ?? homeVisuals[index % homeVisuals.length];

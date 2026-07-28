@@ -233,17 +233,16 @@ export function getProductOptions(product: CatalogProduct): ProductOption[] {
   if (category === "flyers-pamphlets") {
     return name.includes("brochure") ? brochureOptions : flyerOptions;
   }
-  if (category === "office-printing") {
+  if (category === "bill-book") {
     if (name.includes("receipt") || name.includes("bill book")) return billBookOptions;
     if (name.includes("prescription")) return prescriptionPadOptions;
-    if (name.includes("company profile")) return brochureOptions;
     return simpleQuantity();
   }
   if (category === "stickers-labels") return stickerOptions;
   if (category === "flex-printing") return largeFormatOptions(false);
   if (category === "vinyl-printing") return largeFormatOptions(true);
-  if (category === "signage-boards" && name.includes("sunboard")) return sunboardOptions;
-  if (category === "catalogues") return brochureOptions;
+  if (category === "sunboard") return sunboardOptions;
+  if (category === "brochure-book") return brochureOptions;
 
   const values = product.quantity
     .split("/")

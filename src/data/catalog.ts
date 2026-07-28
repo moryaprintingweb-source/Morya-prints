@@ -101,9 +101,9 @@ export const catalog: Category[] = [
     ],
   },
   {
-    slug: "office-printing",
-    name: "Office Printing",
-    eyebrow: "Business essentials",
+    slug: "bill-book",
+    name: "Bill Book",
+    eyebrow: "Business records",
     icon: BriefcaseBusiness,
     products: [
       {
@@ -123,6 +123,14 @@ export const catalog: Category[] = [
         description:
           "Prescription pad from the Excel sheet with size, printing type and book quantity options.",
       },
+    ],
+  },
+  {
+    slug: "letter-head",
+    name: "Letter Head",
+    eyebrow: "Official stationery",
+    icon: RectangleHorizontal,
+    products: [
       {
         name: "Letterheads",
         startingAt: 2499,
@@ -131,6 +139,14 @@ export const catalog: Category[] = [
         singleSidePrice: "2499",
         description: "Letterhead printing from the Excel sheet with quantity option.",
       },
+    ],
+  },
+  {
+    slug: "envelope",
+    name: "Envelope",
+    eyebrow: "Branded mailers",
+    icon: BriefcaseBusiness,
+    products: [
       {
         name: "Envelopes",
         startingAt: 2699,
@@ -199,7 +215,7 @@ export const catalog: Category[] = [
     ],
   },
   {
-    slug: "signage-boards",
+    slug: "sunboard",
     name: "Sunboard",
     eyebrow: "Mounted brand display",
     icon: PanelTop,
@@ -215,7 +231,7 @@ export const catalog: Category[] = [
     ],
   },
   {
-    slug: "catalogues",
+    slug: "brochure-book",
     name: "Brochure / Book",
     eyebrow: "Tell your full story",
     icon: BookOpen,
