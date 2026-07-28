@@ -133,6 +133,11 @@ const cardOptions: ProductOption[] = [
   select("quantity", "Quantity", standardQuantities),
 ];
 
+const standardCardOptions: ProductOption[] = [
+  printSides,
+  select("quantity", "Quantity", standardQuantities),
+];
+
 const flyerOptions: ProductOption[] = [
   select("size", "Size", paperSizes),
   printSides,
@@ -186,7 +191,7 @@ const brochureOptions: ProductOption[] = [
   select("size", "Size", [...paperSizes, "Custom Size"]),
   ...customDimensions("inch"),
   select("pages", "Pages", ["4", "8", "16", "20", "24", "28", "32", "36", "40", "44", "48", "52"]),
-  select("folding", "Folding", ["Single Fold", "Bi-Fold", "Tri-Fold"]),
+  select("folding", "Folding", ["Single Fold", "Bi-Fold", "Tri-Fold", "Two Fold"]),
   select("cover", "Cover", [
     "100 GSM",
     "130 GSM",
@@ -208,6 +213,7 @@ const brochureOptions: ProductOption[] = [
     "Perfect Binding",
     "Spiral Binding",
     "Wire-O Binding",
+    "Wiro Binding",
     "Comb Binding",
   ]),
   select("quantity", "Quantity", ["1", "2", "3", "4", "5", "10", "20", "50", "100", "200", "500"]),
@@ -221,7 +227,9 @@ export function getProductOptions(product: CatalogProduct): ProductOption[] {
   const category = product.category.slug;
   const name = product.name.toLowerCase();
 
-  if (category === "visiting-cards") return cardOptions;
+  if (category === "visiting-cards") {
+    return name.includes("premium") ? cardOptions : standardCardOptions;
+  }
   if (category === "flyers-pamphlets") {
     return name.includes("brochure") ? brochureOptions : flyerOptions;
   }

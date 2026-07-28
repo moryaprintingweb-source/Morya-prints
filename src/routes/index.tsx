@@ -574,6 +574,8 @@ function ProductSection({
   products: { name: string; image: string; slug: string; productSlug?: string; tag: string }[];
   categoryCards?: boolean;
 }) {
+  if (!products.length) return null;
+
   return (
     <section className="container-x py-10 md:py-12">
       <div className="mb-5 flex items-center justify-between gap-4">
