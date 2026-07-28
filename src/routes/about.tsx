@@ -1,25 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import { ArrowRight, BadgeCheck, Clock3, MapPin, PackageCheck } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
 import printingImg from "../assets/printing.jpg";
 
-export const Route = createFileRoute("/about")({
-  head: () => ({
-    meta: [
-      { title: "About Morya Printing Point | Pune" },
-      {
-        name: "description",
-        content:
-          "Meet Morya Printing Point, a one-stop shop for custom printing, flex, stickers, signage and paper finishing in Kothrud, Pune.",
-      },
-    ],
-  }),
-  component: About,
-});
-
-function About() {
+export function About() {
   return (
     <SiteLayout>
       <PageHero

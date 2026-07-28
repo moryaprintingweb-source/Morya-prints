@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import {
   Printer,
   Factory,
@@ -18,20 +18,6 @@ import {
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
-
-export const Route = createFileRoute("/services")({
-  head: () => ({
-    meta: [
-      { title: "Services — Morya Prints Pvt Ltd" },
-      {
-        name: "description",
-        content:
-          "Commercial and industrial printing, corporate branding, LED sign boards, packaging labels, safety signage, digital and offset print services.",
-      },
-    ],
-  }),
-  component: Services,
-});
 
 const services = [
   {
@@ -96,7 +82,7 @@ const services = [
   },
 ];
 
-function Services() {
+export function Services() {
   return (
     <SiteLayout>
       <PageHero

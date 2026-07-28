@@ -1,18 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, Calendar } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
-
-export const Route = createFileRoute("/blog")({
-  head: () => ({
-    meta: [
-      { title: "Blog — Morya Prints Pvt Ltd" },
-      { name: "description", content: "Insights, guides and articles on printing, LED signage, branding and corporate identity." },
-    ],
-  }),
-  component: Blog,
-});
 
 const posts = [
   { title: "Importance of Professional Printing for Businesses", excerpt: "Why quality printing still shapes brand perception in a digital-first world.", img: "https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=1000", date: "Jun 2026", tag: "Printing" },
@@ -22,7 +11,7 @@ const posts = [
   { title: "Digital Printing vs Offset Printing", excerpt: "Which technology fits your project — a practical decision framework.", img: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=1000", date: "Feb 2026", tag: "Guide" },
 ];
 
-function Blog() {
+export function Blog() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Blog" title="Insights from the print & signage floor." subtitle="Practical guides and industry perspectives from our team." crumb="Blog" />

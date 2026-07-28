@@ -1,22 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { Phone, Mail, MapPin, MessageCircle, Send, CheckCircle2, ExternalLink } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
-
-export const Route = createFileRoute("/contact")({
-  head: () => ({
-    meta: [
-      { title: "Contact — Morya Prints Pvt Ltd" },
-      {
-        name: "description",
-        content:
-          "Get a quote for printing, branding, LED signage or packaging. Contact Morya Prints Pvt Ltd.",
-      },
-    ],
-  }),
-  component: Contact,
-});
 
 const services = [
   "Commercial Printing",
@@ -31,7 +16,7 @@ const services = [
   "Other",
 ];
 
-function Contact() {
+export function Contact() {
   const [sent, setSent] = useState(false);
 
   return (
@@ -83,8 +68,11 @@ function Contact() {
               </div>
               <Field label="Email" name="email" type="email" placeholder="you@company.com" />
               <div>
-                <label className="text-sm font-medium text-navy">Service Required</label>
+                <label htmlFor="service" className="text-sm font-medium text-navy">
+                  Service Required
+                </label>
                 <select
+                  id="service"
                   name="service"
                   required
                   className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan"
@@ -96,8 +84,11 @@ function Contact() {
                 </select>
               </div>
               <div>
-                <label className="text-sm font-medium text-navy">Message</label>
+                <label htmlFor="message" className="text-sm font-medium text-navy">
+                  Message
+                </label>
                 <textarea
+                  id="message"
                   name="message"
                   required
                   rows={4}

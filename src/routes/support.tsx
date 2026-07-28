@@ -1,20 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage } from "../components/site/InfoPage";
 
-export const Route = createFileRoute("/support")({
-  head: () => ({
-    meta: [
-      { title: "Support | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Get support for artwork, ordering, delivery and custom printing queries.",
-      },
-    ],
-  }),
-  component: Support,
-});
-
-function Support() {
+export function Support() {
   return (
     <InfoPage
       eyebrow="Support"

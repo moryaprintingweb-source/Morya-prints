@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import { useMemo, useState } from "react";
 import {
   ArrowRight,
@@ -14,28 +14,10 @@ import { PageHero } from "../components/site/PageHero";
 import { allProducts, catalog } from "../data/catalog";
 import { useCart } from "../lib/cart";
 
-type ProductSearch = { category?: string; search?: string };
-
-export const Route = createFileRoute("/products")({
-  validateSearch: (search: Record<string, unknown>): ProductSearch => ({
-    category: typeof search.category === "string" ? search.category : undefined,
-    search: typeof search.search === "string" ? search.search : undefined,
-  }),
-  head: () => ({
-    meta: [
-      { title: "Shop Custom Printing | Morya Printing Point" },
-      {
-        name: "description",
-        content:
-          "Browse 20 custom print categories including visiting cards, stickers, signage, flex, packaging and office stationery.",
-      },
-    ],
-  }),
-  component: Products,
-});
-
-function Products() {
-  const { category: initialCategory, search: initialSearch } = Route.useSearch();
+export function Products() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const initialCategory = searchParams.get("category") ?? undefined;
+  const initialSearch = searchParams.get("search") ?? undefined;
   const [active, setActive] = useState(
     initialCategory && catalog.some((item) => item.slug === initialCategory)
       ? initialCategory
@@ -67,7 +49,11 @@ function Products() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
             <div className="relative flex-1">
               <Search className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <label htmlFor="product-search" className="sr-only">
+                Search products
+              </label>
               <input
+                id="product-search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 className="w-full rounded-xl bg-soft py-3 pl-11 pr-10 text-sm outline-none ring-cyan focus:ring-2"

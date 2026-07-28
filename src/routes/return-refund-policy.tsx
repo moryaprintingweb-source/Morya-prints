@@ -1,20 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage } from "../components/site/InfoPage";
 
-export const Route = createFileRoute("/return-refund-policy")({
-  head: () => ({
-    meta: [
-      { title: "Return & Refund Policy | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Return and refund policy for customized print products and production issues.",
-      },
-    ],
-  }),
-  component: ReturnRefundPolicy,
-});
-
-function ReturnRefundPolicy() {
+export function ReturnRefundPolicy() {
   return (
     <InfoPage
       eyebrow="Returns"

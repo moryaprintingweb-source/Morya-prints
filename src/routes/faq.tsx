@@ -1,20 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage } from "../components/site/InfoPage";
 
-export const Route = createFileRoute("/faq")({
-  head: () => ({
-    meta: [
-      { title: "FAQ | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Frequently asked questions about custom printing, artwork, pricing and delivery.",
-      },
-    ],
-  }),
-  component: FAQ,
-});
-
-function FAQ() {
+export function FAQ() {
   return (
     <InfoPage
       eyebrow="FAQ"

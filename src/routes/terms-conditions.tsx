@@ -1,20 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage } from "../components/site/InfoPage";
 
-export const Route = createFileRoute("/terms-conditions")({
-  head: () => ({
-    meta: [
-      { title: "Terms & Conditions | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Terms and conditions for quotes, artwork approval, production and delivery.",
-      },
-    ],
-  }),
-  component: TermsConditions,
-});
-
-function TermsConditions() {
+export function TermsConditions() {
   return (
     <InfoPage
       eyebrow="Terms"

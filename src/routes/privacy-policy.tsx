@@ -1,20 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { InfoPage } from "../components/site/InfoPage";
 
-export const Route = createFileRoute("/privacy-policy")({
-  head: () => ({
-    meta: [
-      { title: "Privacy Policy | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Privacy policy for customer enquiries, artwork files and order information.",
-      },
-    ],
-  }),
-  component: PrivacyPolicy,
-});
-
-function PrivacyPolicy() {
+export function PrivacyPolicy() {
   return (
     <InfoPage
       eyebrow="Privacy"

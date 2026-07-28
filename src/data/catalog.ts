@@ -339,7 +339,7 @@ export const catalog: Category[] = [
           "Receipt Books are essential for shops, businesses, service providers, and organizations that need proper billing and payment records. Available in duplicate or triplicate formats with custom branding, numbering, and business details, our receipt books are printed on quality paper for clear writing and easy record keeping. Ideal for retail stores, offices, schools, societies, and service businesses.",
       },
       ...fromNames(
-        ["GST Bill Books", "Company Profile Folders"],
+        ["GST Bill Books", "Prescription Pads", "Company Profile Folders"],
         1799,
         "Practical, on-brand stationery for everyday business use.",
         "Custom quantity",
@@ -382,6 +382,7 @@ export const catalog: Category[] = [
     products: fromNames(
       [
         "ACP Sign Boards",
+        "Sunboard",
         "Acrylic Sign Boards",
         "LED Sign Boards",
         "3D Letter Signage",

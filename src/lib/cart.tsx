@@ -7,28 +7,43 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { SelectedProductOption } from "../data/product-options";
 
 export type CartItem = {
+  id: string;
   slug: string;
   name: string;
   category: string;
   image: string;
   price: number;
   quantity: number;
+  selectedOptions: SelectedProductOption[];
+  artworkName?: string;
+};
+
+type CartItemInput = Omit<CartItem, "id" | "quantity" | "selectedOptions"> & {
+  selectedOptions?: SelectedProductOption[];
 };
 
 type CartContextValue = {
   items: CartItem[];
   count: number;
   total: number;
-  addItem: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
-  updateQuantity: (slug: string, quantity: number) => void;
-  removeItem: (slug: string) => void;
+  addItem: (item: CartItemInput, quantity?: number) => void;
+  updateQuantity: (id: string, quantity: number) => void;
+  removeItem: (id: string) => void;
   clearCart: () => void;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "morya-printing-cart";
+
+const getCartItemId = (item: CartItemInput) => {
+  const configuration = (item.selectedOptions ?? [])
+    .map((option) => `${option.id}=${option.value}`)
+    .join("&");
+  return [item.slug, configuration, item.artworkName ?? ""].join("::");
+};
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
@@ -37,7 +52,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
-      if (saved) setItems(JSON.parse(saved));
+      if (saved) {
+        const parsed = JSON.parse(saved) as Partial<CartItem>[];
+        setItems(
+          parsed.map((item) => {
+            const normalized = {
+              ...item,
+              selectedOptions: Array.isArray(item.selectedOptions) ? item.selectedOptions : [],
+            } as CartItemInput;
+            return {
+              ...normalized,
+              id: item.id ?? getCartItemId(normalized),
+              quantity: Math.max(1, Number(item.quantity) || 1),
+            } as CartItem;
+          }),
+        );
+      }
     } catch {
       setItems([]);
     } finally {
@@ -54,32 +84,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [hydrated, items]);
 
-  const addItem = useCallback((item: Omit<CartItem, "quantity">, quantity = 1) => {
+  const addItem = useCallback((item: CartItemInput, quantity = 1) => {
     setItems((current) => {
-      const existing = current.find((entry) => entry.slug === item.slug);
+      const id = getCartItemId(item);
+      const existing = current.find((entry) => entry.id === id);
       if (existing) {
         return current.map((entry) =>
-          entry.slug === item.slug
-            ? { ...entry, quantity: Math.max(1, entry.quantity + quantity) }
-            : entry,
+          entry.id === id ? { ...entry, quantity: Math.max(1, entry.quantity + quantity) } : entry,
         );
       }
-      return [...current, { ...item, quantity: Math.max(1, quantity) }];
+      return [
+        ...current,
+        {
+          ...item,
+          id,
+          selectedOptions: item.selectedOptions ?? [],
+          quantity: Math.max(1, quantity),
+        },
+      ];
     });
   }, []);
 
-  const updateQuantity = useCallback((slug: string, quantity: number) => {
+  const updateQuantity = useCallback((id: string, quantity: number) => {
     setItems((current) =>
       current
-        .map((entry) =>
-          entry.slug === slug ? { ...entry, quantity: Math.max(1, quantity) } : entry,
-        )
+        .map((entry) => (entry.id === id ? { ...entry, quantity: Math.max(1, quantity) } : entry))
         .filter((entry) => entry.quantity > 0),
     );
   }, []);
 
-  const removeItem = useCallback((slug: string) => {
-    setItems((current) => current.filter((entry) => entry.slug !== slug));
+  const removeItem = useCallback((id: string) => {
+    setItems((current) => current.filter((entry) => entry.id !== id));
   }, []);
 
   const clearCart = useCallback(() => setItems([]), []);

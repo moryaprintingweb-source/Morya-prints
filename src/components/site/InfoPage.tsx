@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link } from "./Link";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 import { SiteLayout } from "./SiteLayout";
 import { PageHero } from "./PageHero";

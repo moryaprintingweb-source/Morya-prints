@@ -1,27 +1,22 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { useCart } from "../lib/cart";
 
-export const Route = createFileRoute("/cart")({
-  head: () => ({
-    meta: [
-      { title: "Cart | Morya Printing Point" },
-      {
-        name: "description",
-        content: "Review selected print products and request a quote from Morya Printing Point.",
-      },
-    ],
-  }),
-  component: Cart,
-});
-
-function Cart() {
+export function Cart() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart();
   const message = encodeURIComponent(
     `Hello Morya Printing Point, I want a quote for:\n${items
-      .map((item) => `- ${item.name} x ${item.quantity}`)
-      .join("\n")}\nEstimated total from website: Rs. ${total}`,
+      .map((item) => {
+        const options = item.selectedOptions
+          .map((option) => `  ${option.label}: ${option.value}`)
+          .join("\n");
+        const artwork = item.artworkName ? `\n  Artwork: ${item.artworkName}` : "";
+        return `- ${item.name}${item.quantity > 1 ? ` (cart quantity: ${item.quantity})` : ""}${options ? `\n${options}` : ""}${artwork}`;
+      })
+      .join(
+        "\n",
+      )}\nStarting estimate from website: Rs. ${total}\nPlease confirm the final price and delivery timeline.`,
   );
 
   return (
@@ -59,7 +54,7 @@ function Cart() {
             <div className="space-y-3">
               {items.map((item) => (
                 <article
-                  key={item.slug}
+                  key={item.id}
                   className="grid gap-4 rounded-lg border bg-white p-3 sm:grid-cols-[120px_1fr_auto]"
                 >
                   <img
@@ -73,18 +68,33 @@ function Cart() {
                     </div>
                     <h2 className="mt-1 font-display text-xl font-bold text-navy">{item.name}</h2>
                     <p className="mt-2 text-sm text-muted-foreground">From Rs. {item.price}</p>
+                    {item.selectedOptions.length > 0 && (
+                      <dl className="mt-3 grid gap-x-5 gap-y-1 rounded-md bg-soft p-3 text-sm sm:grid-cols-2">
+                        {item.selectedOptions.map((option) => (
+                          <div key={option.id} className="flex gap-2">
+                            <dt className="text-muted-foreground">{option.label}:</dt>
+                            <dd className="font-semibold text-navy">{option.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    )}
+                    {item.artworkName && (
+                      <p className="mt-2 text-xs font-medium text-green-700">
+                        Artwork selected: {item.artworkName}
+                      </p>
+                    )}
                     <div className="mt-4 inline-flex items-center rounded-full border bg-white">
                       <button
-                        aria-label="Decrease quantity"
-                        onClick={() => updateQuantity(item.slug, item.quantity - 1)}
+                        aria-label="Decrease cart quantity"
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
                         className="grid h-9 w-9 place-items-center"
                       >
                         <Minus className="h-4 w-4" />
                       </button>
                       <span className="min-w-8 text-center text-sm font-bold">{item.quantity}</span>
                       <button
-                        aria-label="Increase quantity"
-                        onClick={() => updateQuantity(item.slug, item.quantity + 1)}
+                        aria-label="Increase cart quantity"
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
                         className="grid h-9 w-9 place-items-center"
                       >
                         <Plus className="h-4 w-4" />
@@ -93,7 +103,7 @@ function Cart() {
                   </div>
                   <button
                     aria-label={`Remove ${item.name}`}
-                    onClick={() => removeItem(item.slug)}
+                    onClick={() => removeItem(item.id)}
                     className="grid h-10 w-10 place-items-center rounded-md text-muted-foreground hover:bg-soft hover:text-orange"
                   >
                     <Trash2 className="h-5 w-5" />
@@ -110,10 +120,14 @@ function Cart() {
                   <span className="font-bold">{items.length}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Estimated from price</span>
+                  <span className="text-muted-foreground">Starting estimate</span>
                   <span className="font-bold text-navy">Rs. {total}</span>
                 </div>
               </div>
+              <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+                Product options do not change the website estimate yet. Final pricing is confirmed
+                with your quote.
+              </p>
               <a
                 href={`https://wa.me/918554842103?text=${message}`}
                 target="_blank"

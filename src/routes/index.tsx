@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight,
@@ -23,25 +23,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../components/ui/accordion";
-
-export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: "Morya Printing Point | Custom Printing in Pune" },
-      {
-        name: "description",
-        content:
-          "Custom printing in Pune for visiting cards, stickers, flex banners, vinyl, signage, labels and business stationery from Morya Printing Point, Kothrud.",
-      },
-      {
-        name: "keywords",
-        content:
-          "printing shop in Pune, custom printing Pune, visiting cards Pune, flex printing Pune, sticker printing Pune, vinyl printing Pune, signage printing Kothrud, Morya Printing Point",
-      },
-    ],
-  }),
-  component: Home,
-});
 
 const categoryHighlights = [
   "visiting-cards",
@@ -89,7 +70,7 @@ const heroSlides = [
   },
 ];
 
-function Home() {
+export function Home() {
   const highlightedCategories = categoryHighlights
     .map((slug) => catalog.find((category) => category.slug === slug))
     .filter(Boolean)

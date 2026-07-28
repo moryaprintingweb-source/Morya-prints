@@ -2,12 +2,46 @@ import {
   ArrowUp,
   Facebook,
   Instagram,
+  type LucideIcon,
   MapPin,
   Phone,
   Twitter,
   Youtube,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+
+const socialLinks: {
+  Icon: LucideIcon | null;
+  label: string;
+  href: string;
+  color: string;
+}[] = [
+  {
+    Icon: Facebook,
+    label: "Facebook",
+    href: "https://www.facebook.com/people/Morya-Printing-Point/pfbid02LV2uRUNe3BpdhRbeRCNPQ8zKjtMyEoxEhGKUGzispXfvtZoAQYMR5GskABgw4rrCl/",
+    color: "bg-[#1877f2]",
+  },
+  {
+    Icon: Youtube,
+    label: "YouTube",
+    href: "https://www.youtube.com/@moryadigitalprinting",
+    color: "bg-[#ff0000]",
+  },
+  {
+    Icon: Instagram,
+    label: "Instagram",
+    href: "https://www.instagram.com/morya_printing_point/",
+    color: "bg-[#e4405f]",
+  },
+  { Icon: Twitter, label: "X", href: "https://x.com/shendedesign", color: "bg-black" },
+  {
+    Icon: null,
+    label: "WhatsApp",
+    href: "https://api.whatsapp.com/send?phone=918554842103",
+    color: "bg-[#25D366]",
+  },
+];
 
 export function FloatingActions() {
   const [showTop, setShowTop] = useState(false);
@@ -25,25 +59,19 @@ export function FloatingActions() {
         aria-label="Follow Morya Printing Point"
         className="fixed left-0 top-1/2 z-50 hidden -translate-y-1/2 gap-1 md:flex md:flex-col"
       >
-        {[
-          [Facebook, "Facebook", "https://www.facebook.com/people/Morya-Printing-Point/pfbid02LV2uRUNe3BpdhRbeRCNPQ8zKjtMyEoxEhGKUGzispXfvtZoAQYMR5GskABgw4rrCl/", "bg-[#1877f2]"],
-          [Youtube, "YouTube", "https://www.youtube.com/@moryadigitalprinting", "bg-[#ff0000]"],
-          [Instagram, "Instagram", "https://www.instagram.com/morya_printing_point/", "bg-[#e4405f]"],
-          [Twitter, "X", "https://x.com/shendedesign", "bg-black"],
-          [null, "WhatsApp", "https://api.whatsapp.com/send?phone=918554842103", "bg-[#25D366]"],
-        ].map(([Icon, label, href, color]) => (
+        {socialLinks.map(({ Icon, label, href, color }) => (
           <a
-            key={label as string}
-            href={href as string}
+            key={label}
+            href={href}
             target="_blank"
             rel="noreferrer"
             aria-label={`Morya Printing Point on ${label}`}
             className={`grid h-8 w-8 place-items-center rounded-r-md text-white shadow-md transition hover:w-10 ${color}`}
           >
-            {label === "WhatsApp" ? (
-              <img src="/whatsapp.svg" alt="" className="h-3.5 w-3.5 brightness-0 invert" />
-            ) : (
+            {Icon ? (
               <Icon className="h-3.5 w-3.5" />
+            ) : (
+              <img src="/whatsapp.svg" alt="" className="h-3.5 w-3.5 brightness-0 invert" />
             )}
           </a>
         ))}

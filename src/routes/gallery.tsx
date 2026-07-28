@@ -1,18 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
 import { Masonry } from "../components/gallery/Masonry";
-
-export const Route = createFileRoute("/gallery")({
-  head: () => ({
-    meta: [
-      { title: "Gallery — Morya Prints Pvt Ltd" },
-      { name: "description", content: "A portfolio of our printing, branding, LED signage, packaging and corporate print work." },
-    ],
-  }),
-  component: Gallery,
-});
 
 const images = [
   { id: "offset", img: "https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=1200", label: "Offset Printing", height: 560 },
@@ -26,7 +15,7 @@ const images = [
   { id: "bulk", img: "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=1200", label: "Bulk Printing", height: 500 },
 ];
 
-function Gallery() {
+export function Gallery() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Gallery" title="Portfolio & Recent Work" subtitle="A visual walk-through of projects delivered across industries." crumb="Gallery" />

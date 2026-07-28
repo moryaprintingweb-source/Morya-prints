@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { Link } from "../components/site/Link";
 import {
   ArrowRight,
   Check,
@@ -11,51 +11,39 @@ import {
   Upload,
   ChevronDown,
 } from "lucide-react";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { allProducts, findProductBySlug } from "../data/catalog";
+import {
+  getDefaultSelections,
+  getProductOptions,
+  getVisibleSelections,
+  type ProductOption as ProductOptionDefinition,
+} from "../data/product-options";
 import { useCart } from "../lib/cart";
 
-export const Route = createFileRoute("/products_/$slug")({
-  head: ({ params }) => {
-    const product = findProductBySlug(params.slug);
-    return {
-      meta: [
-        { title: `${product?.name ?? "Product"} | Morya Printing Point` },
-        {
-          name: "description",
-          content:
-            product?.description ??
-            "Custom print product details from Morya Printing Point in Kothrud, Pune.",
-        },
-      ],
-    };
-  },
-  component: ProductDetail,
-});
-
-function ProductDetail() {
-  const { slug } = Route.useParams();
-  const product = findProductBySlug(slug);
+export function ProductDetail({ slug }: { slug?: string }) {
+  const routeSlug = slug ?? decodeURIComponent(window.location.pathname.split("/").filter(Boolean).at(-1) ?? "");
+  const product = findProductBySlug(routeSlug);
   const { addItem } = useCart();
-  const [quantity, setQuantity] = useState(100);
   const [selectedImage, setSelectedImage] = useState(product?.image ?? "");
   const [activeDetailTab, setActiveDetailTab] = useState<
     "description" | "specifications" | "other-information"
   >("description");
-  const [cardType, setCardType] = useState("Standard Cards");
-  const [material, setMaterial] = useState("300 GSM Art Card");
-  const [cornerType, setCornerType] = useState("Square Corners");
-  const [orientation, setOrientation] = useState("Landscape");
-  const [selectedPrice, setSelectedPrice] = useState(
-    product?.singleSidePrice
-      ? `Single Side - Rs. ${product.singleSidePrice.split("/")[0].trim()}`
-      : product?.bothSidePrice
-        ? `Both Side - Rs. ${product.bothSidePrice.split("/")[0].trim()}`
-        : "",
+  const [isSaved, setIsSaved] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
+  const optionDefinitions = useMemo(() => (product ? getProductOptions(product) : []), [product]);
+  const [selections, setSelections] = useState<Record<string, string>>(() =>
+    getDefaultSelections(optionDefinitions),
   );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    setSelections(getDefaultSelections(optionDefinitions));
+    setUploadedFile(null);
+    setSelectedImage(product?.image ?? "");
+  }, [optionDefinitions, product?.image]);
 
   const related = useMemo(() => {
     if (!product) return [];
@@ -88,20 +76,18 @@ function ProductDetail() {
   };
   const mrp = Math.round(product.startingAt * 1.18);
   const discount = Math.max(5, Math.round(((mrp - product.startingAt) / mrp) * 100));
-  const priceOptions = [
-    ...(product.singleSidePrice ?? "").split("/").filter(Boolean).map((price) => ({
-      label: `Single Side - Rs. ${price.trim()}`,
-      value: `Single Side - Rs. ${price.trim()}`,
-    })),
-    ...(product.bothSidePrice ?? "").split("/").filter(Boolean).map((price) => ({
-      label: `Both Side - Rs. ${price.trim()}`,
-      value: `Both Side - Rs. ${price.trim()}`,
-    })),
-  ];
+  const selectedOptions = getVisibleSelections(optionDefinitions, selections);
+  const hasMissingRequiredOption = optionDefinitions.some((option) => {
+    const isVisible =
+      !option.showWhen || selections[option.showWhen.optionId] === option.showWhen.value;
+    return isVisible && option.required && !selections[option.id]?.trim();
+  });
+  const optionMessage = selectedOptions
+    .map((option) => `${option.label}: ${option.value}`)
+    .join("\n");
   const buyMessage = encodeURIComponent(
-    `Hello Morya Printing Point, I want to order ${product.name}. Card type: ${cardType}. Material: ${material}. Corners: ${cornerType}. Orientation: ${orientation}. Selected price: ${selectedPrice}. Quantity: ${quantity}.${uploadedFile ? ` I have selected artwork: ${uploadedFile.name}` : ""}`,
+    `Hello Morya Printing Point, I want to order ${product.name}.\n${optionMessage}${uploadedFile ? `\nArtwork selected: ${uploadedFile.name}` : ""}\nPlease confirm the final price and delivery timeline.`,
   );
-  const quantityOptions = [100, 200, 300, 400, 500, 750, 1000, 1500];
 
   const addProduct = () =>
     addItem(
@@ -111,17 +97,54 @@ function ProductDetail() {
         category: product.category.name,
         image: product.image,
         price: product.startingAt,
+        selectedOptions,
+        artworkName: uploadedFile?.name,
       },
-      quantity,
+      1,
     );
+
+  const toggleSaved = () => setIsSaved((saved) => !saved);
+
+  const shareProduct = async () => {
+    const shareUrl = window.location.href;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product.name,
+          text: `Check out ${product.name} from Morya Printing Point.`,
+          url: shareUrl,
+        });
+        setShareStatus("Shared");
+        return;
+      } catch {
+        // Fall back to copying when native share is unavailable or cancelled.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setShareStatus("Link copied");
+    } catch {
+      setShareStatus("Copy link from address bar");
+    }
+  };
 
   return (
     <SiteLayout>
       <section className="container-x py-5 md:py-10">
-        <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-navy">Home</Link>
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-6 flex items-center gap-2 text-sm text-muted-foreground"
+        >
+          <Link to="/" className="hover:text-navy">
+            Home
+          </Link>
           <span>/</span>
-          <Link to="/products" search={{ category: product.category.slug }} className="hover:text-navy">
+          <Link
+            to="/products"
+            search={{ category: product.category.slug }}
+            className="hover:text-navy"
+          >
             {product.category.name}
           </Link>
           <span>/</span>
@@ -132,10 +155,14 @@ function ProductDetail() {
             <div className="relative rounded-2xl border bg-white p-3">
               <button
                 type="button"
-                aria-label="Save product"
-                className="absolute right-6 top-6 z-10 grid h-11 w-11 place-items-center rounded-full bg-white shadow-md transition hover:text-orange"
+                aria-label={isSaved ? "Remove saved product" : "Save product"}
+                aria-pressed={isSaved}
+                onClick={toggleSaved}
+                className={`absolute right-6 top-6 z-10 grid h-11 w-11 place-items-center rounded-full bg-white shadow-md transition hover:text-orange ${
+                  isSaved ? "text-orange" : ""
+                }`}
               >
-                <Heart className="h-5 w-5" />
+                <Heart className={`h-5 w-5 ${isSaved ? "fill-current" : ""}`} />
               </button>
               <img
                 src={selectedImage}
@@ -247,37 +274,28 @@ function ProductDetail() {
               </div>
             )}
 
-            <div className="mt-6 space-y-4">
-              <ProductOption label="Card Type" value={cardType} onChange={setCardType}>
-                {["Standard Cards", "Standard Plus Cards", "Textured Cards", "Metallic Cards", "Eco-Friendly Cards", "Non Tearable Cards", "Special Texture Cards", "Transparent Card"].map((option) => <option key={option}>{option}</option>)}
-              </ProductOption>
-              <ProductOption label="Materials" value={material} onChange={setMaterial}>
-                {["300 GSM Art Card", "350 GSM Art Card", "Premium Matte Card", "Textured Card", "Metallic Card"].map((option) => <option key={option}>{option}</option>)}
-              </ProductOption>
-              <ProductOption label="Corner Type" value={cornerType} onChange={setCornerType}>
-                {["Square Corners", "Rounded Corners"].map((option) => <option key={option}>{option}</option>)}
-              </ProductOption>
-              <ProductOption label="Orientation" value={orientation} onChange={setOrientation}>
-                {["Landscape", "Portrait"].map((option) => <option key={option}>{option}</option>)}
-              </ProductOption>
-              <ProductOption label="Select Price" value={selectedPrice} onChange={setSelectedPrice}>
-                {priceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-              </ProductOption>
-              <label className="block text-sm font-bold text-navy">
-                Quantity
-                <select
-                  value={quantity}
-                  onChange={(event) => setQuantity(Number(event.target.value))}
-                  className="mt-2 w-full rounded-lg border bg-white px-4 py-3 text-sm font-semibold text-navy"
-                >
-                  {quantityOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}{option === 200 ? " - Recommended" : option === 1000 ? " - Best Price" : ""}
-                    </option>
-                  ))}
-                </select>
-              </label>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {optionDefinitions.map((option) => {
+                const isVisible =
+                  !option.showWhen ||
+                  selections[option.showWhen.optionId] === option.showWhen.value;
+                if (!isVisible) return null;
+                return (
+                  <ProductOptionField
+                    key={option.id}
+                    option={option}
+                    value={selections[option.id] ?? ""}
+                    onChange={(value) =>
+                      setSelections((current) => ({ ...current, [option.id]: value }))
+                    }
+                  />
+                );
+              })}
             </div>
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              Options are recorded with your request. Final pricing will be confirmed by the Morya
+              team.
+            </p>
 
             <div className="mt-5">
               <button
@@ -290,45 +308,54 @@ function ProductDetail() {
               <input
                 ref={uploadInputRef}
                 type="file"
+                aria-label="Upload design file"
                 accept=".pdf,.ai,.cdr,.psd,.jpg,.jpeg,.png"
                 className="sr-only"
                 onChange={(event) => setUploadedFile(event.target.files?.[0] ?? null)}
               />
             </div>
             {uploadedFile && (
-              <p className="mt-2 text-xs font-medium text-green-700">Selected: {uploadedFile.name}. Send it with your WhatsApp order for confirmation.</p>
+              <p className="mt-2 text-xs font-medium text-green-700">
+                Selected: {uploadedFile.name}. Send it with your WhatsApp order for confirmation.
+              </p>
             )}
 
             <div className="mt-5 divide-y rounded-lg border bg-white">
               <details className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-4 text-sm font-semibold text-navy">
-                  Specs &amp; templates <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                  Specs &amp; templates{" "}
+                  <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
                 </summary>
                 <div className="border-t px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-                  Share a print-ready PDF, AI, CDR, PSD, JPG or PNG file. Keep important text inside the safe area; our team will confirm the final artwork before production.
+                  Share a print-ready PDF, AI, CDR, PSD, JPG or PNG file. Keep important text inside
+                  the safe area; our team will confirm the final artwork before production.
                 </div>
               </details>
               <details className="group">
                 <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-4 text-sm font-semibold text-navy">
-                  Product options <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+                  Product options{" "}
+                  <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
                 </summary>
                 <div className="border-t px-4 py-3 text-sm leading-relaxed text-muted-foreground">
-                  Custom sizes, paper/material, lamination, sides and finishing are available. Contact us for a tailored quote or bulk-order pricing.
+                  Custom sizes, paper/material, lamination, sides and finishing are available.
+                  Contact us for a tailored quote or bulk-order pricing.
                 </div>
               </details>
             </div>
 
             <div className="mt-6 grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <Spec label="Card Type" value={cardType} />
-              <Spec label="Material" value={material} />
-              <Spec label="Corner Type" value={cornerType} />
-              <Spec label="Orientation" value={orientation} />
-              <Spec label="Selected Price" value={selectedPrice || `Rs. ${product.startingAt}`} />
-              <Spec label="Quantity" value={quantity.toLocaleString()} />
+              {selectedOptions.map((option) => (
+                <Spec key={option.id} label={option.label} value={option.value} />
+              ))}
+              <Spec label="Starting Price" value={`Rs. ${product.startingAt}`} />
             </div>
 
             <div className="mt-7 flex gap-3">
-              <button onClick={addProduct} className="btn-navy w-full">
+              <button
+                onClick={addProduct}
+                disabled={hasMissingRequiredOption}
+                className="btn-navy w-full disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 <ShoppingBag className="h-4 w-4" /> Add To Cart
               </button>
             </div>
@@ -336,12 +363,27 @@ function ProductDetail() {
               <span className="inline-flex items-center gap-2">
                 <Truck className="h-4 w-4 text-orange" /> Estimated delivery after confirmation
               </span>
-              <button className="inline-flex items-center gap-2 font-bold text-navy">
-                <Heart className="h-4 w-4" /> Save
+              <button
+                type="button"
+                aria-pressed={isSaved}
+                onClick={toggleSaved}
+                className="inline-flex items-center gap-2 font-bold text-navy"
+              >
+                <Heart className={`h-4 w-4 ${isSaved ? "fill-current text-orange" : ""}`} />{" "}
+                {isSaved ? "Saved" : "Save"}
               </button>
-              <button className="inline-flex items-center gap-2 font-bold text-navy">
+              <button
+                type="button"
+                onClick={shareProduct}
+                className="inline-flex items-center gap-2 font-bold text-navy"
+              >
                 <Share2 className="h-4 w-4" /> Share
               </button>
+              {shareStatus && (
+                <span className="text-xs font-semibold text-orange" role="status">
+                  {shareStatus}
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -353,7 +395,7 @@ function ProductDetail() {
             <div
               role="tablist"
               aria-label="Product details"
-              className="flex gap-8 border-b text-lg font-semibold text-muted-foreground"
+              className="flex max-w-full gap-6 overflow-x-auto border-b text-base font-semibold text-muted-foreground sm:gap-8 sm:text-lg"
             >
               {[
                 ["description", "Description"],
@@ -372,10 +414,8 @@ function ProductDetail() {
                         tab as "description" | "specifications" | "other-information",
                       )
                     }
-                    className={`-mb-px border-b-2 pb-3 transition-colors ${
-                      isActive
-                        ? "border-navy text-navy"
-                        : "border-transparent hover:text-navy"
+                    className={`-mb-px shrink-0 border-b-2 pb-3 transition-colors ${
+                      isActive ? "border-navy text-navy" : "border-transparent hover:text-navy"
                     }`}
                   >
                     {label}
@@ -389,7 +429,9 @@ function ProductDetail() {
                   <li>{product.description}</li>
                   <li>Designed for clean brand presentation and reliable print quality.</li>
                   <li>Available with custom sizes, materials, lamination and finishing options.</li>
-                  <li>Best suited for businesses, events, packaging, promotions and local branding.</li>
+                  <li>
+                    Best suited for businesses, events, packaging, promotions and local branding.
+                  </li>
                 </ul>
               )}
               {activeDetailTab === "specifications" && (
@@ -406,7 +448,9 @@ function ProductDetail() {
                 <ul className="space-y-2">
                   <li>Artwork, size, quantity and finishing are confirmed before production.</li>
                   <li>Delivery timelines depend on the final artwork and order quantity.</li>
-                  <li>Contact us on WhatsApp for custom sizes, bulk pricing or design assistance.</li>
+                  <li>
+                    Contact us on WhatsApp for custom sizes, bulk pricing or design assistance.
+                  </li>
                 </ul>
               )}
             </div>
@@ -511,26 +555,54 @@ function ProductDetail() {
   );
 }
 
-function ProductOption({
-  label,
+function ProductOptionField({
+  option,
   value,
   onChange,
-  children,
 }: {
-  label: string;
+  option: ProductOptionDefinition;
   value: string;
   onChange: (value: string) => void;
-  children: ReactNode;
 }) {
+  if (option.type !== "select") {
+    return (
+      <label className="block text-sm font-bold text-navy">
+        {option.label}
+        <div className="relative mt-2">
+          <input
+            type={option.type}
+            min={option.type === "number" ? "0" : undefined}
+            step={option.type === "number" ? "any" : undefined}
+            value={value}
+            required={option.required}
+            placeholder={option.placeholder}
+            onChange={(event) => onChange(event.target.value)}
+            className="w-full rounded-lg border border-slate-300 bg-white px-4 py-3 pr-14 text-base font-medium text-navy outline-none transition focus:border-navy focus:ring-2 focus:ring-navy/15"
+          />
+          {option.suffix && (
+            <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-muted-foreground">
+              {option.suffix}
+            </span>
+          )}
+        </div>
+      </label>
+    );
+  }
+
   return (
     <label className="block text-sm font-bold text-navy">
-      {label}
+      {option.label}
       <select
         value={value}
+        required={option.required}
         onChange={(event) => onChange(event.target.value)}
         className="mt-2 w-full rounded-lg border border-slate-300 bg-white px-4 py-3 text-base font-medium text-navy outline-none transition focus:border-navy focus:ring-2 focus:ring-navy/15"
       >
-        {children}
+        {option.values?.map((choice) => (
+          <option key={choice} value={choice}>
+            {choice}
+          </option>
+        ))}
       </select>
     </label>
   );

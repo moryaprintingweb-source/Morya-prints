@@ -1,20 +1,9 @@
-import { createFileRoute } from "@tanstack/react-router";
 import {
   Factory, ShoppingBag, Building2, HeartPulse, GraduationCap, Home, HardHat, Car, Ticket, Store,
 } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
-
-export const Route = createFileRoute("/industries")({
-  head: () => ({
-    meta: [
-      { title: "Industries We Serve — Morya Prints Pvt Ltd" },
-      { name: "description", content: "Trusted printing and signage partner across manufacturing, retail, corporate, healthcare, education, real estate, construction and more." },
-    ],
-  }),
-  component: Industries,
-});
 
 const list = [
   { icon: Factory, title: "Manufacturing", desc: "Industrial labels, safety signage, factory branding." },
@@ -29,7 +18,7 @@ const list = [
   { icon: Store, title: "Local Businesses", desc: "Shop signage, printing and promo material." },
 ];
 
-function Industries() {
+export function Industries() {
   return (
     <SiteLayout>
       <PageHero eyebrow="Industries" title="Industries We Serve" subtitle="From large-scale manufacturers to neighbourhood businesses — we tailor solutions for every sector." crumb="Industries" />
