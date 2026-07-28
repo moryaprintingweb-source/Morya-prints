@@ -401,7 +401,9 @@ function categoryImage(category: (typeof catalog)[number], index: number) {
   return categorySpecific[category.slug] ?? homeVisuals[index % homeVisuals.length];
 }
 
-function productImage(image: string, index: number) {
+function productImage(image: string | undefined, index: number) {
+  if (!image) return homeVisuals[index % homeVisuals.length];
+
   const repeatedGeneric =
     image.includes("1586953208448") ||
     image.includes("1601924582970") ||

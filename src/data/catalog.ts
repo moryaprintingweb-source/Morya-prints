@@ -82,7 +82,7 @@ const fromNames = (
   names.map((name, index) => ({
     name,
     startingAt: startingAt + index * 100,
-    image: visuals[index],
+    image: visuals[index % visuals.length],
     description,
     quantity,
   }));
