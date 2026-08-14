@@ -18,6 +18,7 @@ import {
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
+import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 
 const services = [
   {
@@ -83,6 +84,9 @@ const services = [
 ];
 
 export function Services() {
+  const { getSetting } = usePublicSiteSettings();
+  const whatsappNumber = getSetting("business_whatsapp_number");
+
   return (
     <SiteLayout>
       <PageHero
@@ -107,7 +111,7 @@ export function Services() {
                     Enquire <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                   <a
-                    href="https://wa.me/918554842103"
+                    href={whatsappHref(whatsappNumber)}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-primary !py-2 !px-3 text-xs"

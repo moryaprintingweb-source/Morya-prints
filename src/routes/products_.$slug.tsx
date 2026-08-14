@@ -21,11 +21,64 @@ import {
   type ProductOption as ProductOptionDefinition,
 } from "../data/product-options";
 import { useCart } from "../lib/cart";
+import { api, type ApiProduct } from "../lib/api";
+import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
+import heroImg from "../assets/hero.jpg";
+
+type ProductOffer = {
+  mrp?: number | null;
+  offerLabel?: string;
+  offerPercent?: number;
+  offerActive?: boolean;
+  offerStartsAt?: string | null;
+  offerEndsAt?: string | null;
+};
+
+type ProductLike = (typeof allProducts)[number] & ProductOffer;
+
+function normalizeApiProduct(product: ApiProduct): ProductLike {
+  return {
+    slug: product.slug,
+    name: product.name,
+    description: product.description,
+    image: product.imageUrl || heroImg,
+    startingAt: product.startingAt,
+    mrp: product.mrp,
+    quantity: product.quantity ?? "",
+    singleSidePrice: product.singleSidePrice,
+    bothSidePrice: product.bothSidePrice,
+    offerLabel: product.offerLabel,
+    offerPercent: product.offerPercent,
+    offerActive: product.offerActive,
+    offerStartsAt: product.offerStartsAt,
+    offerEndsAt: product.offerEndsAt,
+    category: {
+      slug: product.category.slug,
+      name: product.category.name,
+      eyebrow: product.category.eyebrow ?? "",
+      products: [],
+    },
+  } as ProductLike;
+}
+
+function isOfferVisible(product: ProductLike) {
+  if (!product.offerActive) return false;
+  const today = new Date();
+  if (product.offerStartsAt && new Date(product.offerStartsAt) > today) return false;
+  if (product.offerEndsAt && new Date(product.offerEndsAt) < today) return false;
+  return Boolean(product.offerLabel || product.offerPercent || product.mrp);
+}
 
 export function ProductDetail({ slug }: { slug?: string }) {
-  const routeSlug = slug ?? decodeURIComponent(window.location.pathname.split("/").filter(Boolean).at(-1) ?? "");
-  const product = findProductBySlug(routeSlug);
+  const routeSlug =
+    slug ?? decodeURIComponent(window.location.pathname.split("/").filter(Boolean).at(-1) ?? "");
+  const [apiProducts, setApiProducts] = useState<ProductLike[]>([]);
+  const [loadingApiProducts, setLoadingApiProducts] = useState(true);
+  const product =
+    apiProducts.find((item) => item.slug === routeSlug) ?? findProductBySlug(routeSlug);
   const { addItem } = useCart();
+  const { getSetting } = usePublicSiteSettings();
+  const whatsappNumber = getSetting("business_whatsapp_number");
   const [selectedImage, setSelectedImage] = useState(product?.image ?? "");
   const [activeDetailTab, setActiveDetailTab] = useState<
     "description" | "specifications" | "other-information"
@@ -40,6 +93,14 @@ export function ProductDetail({ slug }: { slug?: string }) {
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
+    setLoadingApiProducts(true);
+    api<{ products: ApiProduct[] }>("/api/products")
+      .then((result) => setApiProducts(result.products.map(normalizeApiProduct)))
+      .catch(() => setApiProducts([]))
+      .finally(() => setLoadingApiProducts(false));
+  }, []);
+
+  useEffect(() => {
     setSelections(getDefaultSelections(optionDefinitions));
     setUploadedFile(null);
     setSelectedImage(product?.image ?? "");
@@ -52,6 +113,19 @@ export function ProductDetail({ slug }: { slug?: string }) {
       .concat(allProducts.filter((item) => item.category.slug !== product.category.slug))
       .slice(0, 6);
   }, [product]);
+
+  if (!product && loadingApiProducts) {
+    return (
+      <SiteLayout>
+        <section className="container-x grid min-h-[420px] place-items-center py-12 text-center">
+          <div>
+            <h1 className="font-display text-4xl font-bold text-navy">Loading product</h1>
+            <p className="mt-3 text-muted-foreground">Checking the MySQL product catalog.</p>
+          </div>
+        </section>
+      </SiteLayout>
+    );
+  }
 
   if (!product) {
     return (
@@ -74,8 +148,11 @@ export function ProductDetail({ slug }: { slug?: string }) {
   const selectAdjacentImage = (direction: number) => {
     setSelectedImage(images[(selectedImageIndex + direction + images.length) % images.length]);
   };
-  const mrp = Math.round(product.startingAt * 1.18);
-  const discount = Math.max(5, Math.round(((mrp - product.startingAt) / mrp) * 100));
+  const offerVisible = isOfferVisible(product);
+  const mrp = product.mrp && product.mrp > product.startingAt ? product.mrp : null;
+  const discount =
+    product.offerPercent ||
+    (mrp ? Math.max(1, Math.round(((mrp - product.startingAt) / mrp) * 100)) : 0);
   const selectedOptions = getVisibleSelections(optionDefinitions, selections);
   const hasMissingRequiredOption = optionDefinitions.some((option) => {
     const isVisible =
@@ -102,6 +179,18 @@ export function ProductDetail({ slug }: { slug?: string }) {
       },
       1,
     );
+
+  const addProductWithDefaultOptions = (item: ProductLike) => {
+    const options = getProductOptions(item);
+    addItem({
+      slug: item.slug,
+      name: item.name,
+      category: item.category.name,
+      image: item.image,
+      price: item.startingAt,
+      selectedOptions: getVisibleSelections(options, getDefaultSelections(options)),
+    });
+  };
 
   const toggleSaved = () => setIsSaved((saved) => !saved);
 
@@ -207,9 +296,11 @@ export function ProductDetail({ slug }: { slug?: string }) {
 
           <div className="lg:pt-1">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-orange px-3 py-1 text-xs font-extrabold text-white">
-                Save {discount}%
-              </span>
+              {offerVisible && (
+                <span className="rounded-full bg-orange px-3 py-1 text-xs font-extrabold text-white">
+                  {product.offerLabel || (discount ? `Save ${discount}%` : "Offer")}
+                </span>
+              )}
               <span className="text-sm text-muted-foreground">
                 Category:{" "}
                 <Link
@@ -244,7 +335,9 @@ export function ProductDetail({ slug }: { slug?: string }) {
               <div className="font-display text-3xl font-bold text-orange">
                 MRP Rs. {product.startingAt}
               </div>
-              <div className="pb-1 text-sm text-muted-foreground line-through">MRP Rs. {mrp}</div>
+              {offerVisible && mrp && (
+                <div className="pb-1 text-sm text-muted-foreground line-through">MRP Rs. {mrp}</div>
+              )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
               Tax included. Shipping calculated at checkout.
@@ -461,7 +554,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
               Share size, quantity and deadline. Morya team will suggest the best material.
             </p>
             <a
-              href={`https://wa.me/918554842103?text=${buyMessage}`}
+              href={whatsappHref(whatsappNumber, buyMessage)}
               target="_blank"
               rel="noreferrer"
               className="btn-primary mt-5 w-full"
@@ -534,13 +627,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
               <button
                 onClick={() => {
                   [product, ...related.slice(0, 2)].forEach((item) =>
-                    addItem({
-                      slug: item.slug,
-                      name: item.name,
-                      category: item.category.name,
-                      image: item.image,
-                      price: item.startingAt,
-                    }),
+                    addProductWithDefaultOptions(item),
                   );
                 }}
                 className="btn-navy mt-4"

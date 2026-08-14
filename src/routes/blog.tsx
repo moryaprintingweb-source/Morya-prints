@@ -1,41 +1,253 @@
-import { ArrowRight, Calendar } from "lucide-react";
+import { ArrowLeft, ArrowRight, Calendar } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Link } from "../components/site/Link";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
+import { api, type ApiBlogPost } from "../lib/api";
 
-const posts = [
-  { title: "Importance of Professional Printing for Businesses", excerpt: "Why quality printing still shapes brand perception in a digital-first world.", img: "https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=1000", date: "Jun 2026", tag: "Printing" },
-  { title: "How LED Signage Helps Brand Visibility", excerpt: "The measurable impact of illuminated signage on foot traffic and recall.", img: "https://images.unsplash.com/photo-1541417904950-b855846fe074?w=1000", date: "May 2026", tag: "Signage" },
-  { title: "Why Corporate Branding Matters", excerpt: "Consistent branding across every touchpoint builds unshakeable trust.", img: "https://images.unsplash.com/photo-1611095973763-414019e72400?w=1000", date: "Apr 2026", tag: "Branding" },
-  { title: "Benefits of High-Quality Packaging Labels", excerpt: "How premium labels influence purchase decisions and reduce returns.", img: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=1000", date: "Mar 2026", tag: "Packaging" },
-  { title: "Digital Printing vs Offset Printing", excerpt: "Which technology fits your project — a practical decision framework.", img: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=1000", date: "Feb 2026", tag: "Guide" },
+type BlogCard = {
+  title: string;
+  slug: string;
+  excerpt: string;
+  img: string;
+  date: string;
+  tag: string;
+  content: string[];
+};
+
+const posts: BlogCard[] = [
+  {
+    title: "Importance of Professional Printing for Businesses",
+    slug: "importance-of-professional-printing-for-businesses",
+    excerpt: "Why quality printing still shapes brand perception in a digital-first world.",
+    img: "https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=1000",
+    date: "Jun 2026",
+    tag: "Printing",
+    content: [
+      "Professional printing gives your business a sharper first impression. Visiting cards, brochures, flyers, menus, invoices and packaging labels are often handled by customers before they speak to your team.",
+      "Good paper, clean color, correct alignment and neat finishing make the brand feel reliable. Poor print quality can quietly reduce trust, even when the product or service is strong.",
+      "For local businesses, consistent printed material also helps customers remember the name, phone number, address and offer. That is why print still matters alongside websites, WhatsApp and social media.",
+    ],
+  },
+  {
+    title: "How LED Signage Helps Brand Visibility",
+    slug: "how-led-signage-helps-brand-visibility",
+    excerpt: "The measurable impact of illuminated signage on foot traffic and recall.",
+    img: "https://images.unsplash.com/photo-1541417904950-b855846fe074?w=1000",
+    date: "May 2026",
+    tag: "Signage",
+    content: [
+      "LED signage helps a shop or office stay visible in crowded streets, evening traffic and low-light conditions. A clear illuminated board can guide walk-in customers from a distance.",
+      "The biggest benefit is recall. When people pass the same location daily, a bright and readable sign helps them remember the business name when they need that service later.",
+      "For best results, keep the message short, use strong contrast and choose durable materials suitable for the location.",
+    ],
+  },
+  {
+    title: "Why Corporate Branding Matters",
+    slug: "why-corporate-branding-matters",
+    excerpt: "Consistent branding across every touchpoint builds unshakeable trust.",
+    img: "https://images.unsplash.com/photo-1611095973763-414019e72400?w=1000",
+    date: "Apr 2026",
+    tag: "Branding",
+    content: [
+      "Corporate branding is not only a logo. It includes the colors, fonts, tone, packaging, business stationery, signage and every printed item customers see.",
+      "When these materials look consistent, the business feels organized and dependable. This is especially important for companies that meet clients, send quotations, deliver products or run events.",
+      "A practical way to begin is by standardizing visiting cards, letterheads, envelopes, brochures, ID cards and presentation folders.",
+    ],
+  },
+  {
+    title: "Benefits of High-Quality Packaging Labels",
+    slug: "benefits-of-high-quality-packaging-labels",
+    excerpt: "How premium labels influence purchase decisions and reduce returns.",
+    img: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=1000",
+    date: "Mar 2026",
+    tag: "Packaging",
+    content: [
+      "Packaging labels carry important details such as brand name, product type, price, ingredients, usage instructions, batch information and contact details.",
+      "High-quality labels make products look more professional on shelves and during delivery. They also reduce confusion by keeping information readable and durable.",
+      "Choose label material based on where the product will be used. Paper stickers work for many indoor products, while non-tearable or waterproof options are better for tougher handling.",
+    ],
+  },
+  {
+    title: "Digital Printing vs Offset Printing",
+    slug: "digital-printing-vs-offset-printing",
+    excerpt: "Which technology fits your project - a practical decision framework.",
+    img: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=1000",
+    date: "Feb 2026",
+    tag: "Guide",
+    content: [
+      "Digital printing is usually faster for small quantities and quick changes. It works well for short-run visiting cards, flyers, stickers, certificates and urgent marketing material.",
+      "Offset printing is often better for large quantities where color consistency and per-piece cost matter. It is commonly used for bulk brochures, books, packaging and stationery.",
+      "The right choice depends on quantity, deadline, paper, finishing, budget and whether the artwork may change later.",
+    ],
+  },
 ];
 
+function toBlogCard(post: ApiBlogPost): BlogCard {
+  return {
+    title: post.title,
+    slug: post.slug,
+    excerpt: post.excerpt,
+    img: post.image_url,
+    date: post.published_at || "Latest",
+    tag: post.tag || "Print",
+    content: [post.excerpt],
+  };
+}
+
+function wordCount(paragraphs: string[]) {
+  return paragraphs.join(" ").trim().split(/\s+/).filter(Boolean).length;
+}
+
+function fullArticle(post: BlogCard) {
+  if (wordCount(post.content) >= 500) return post.content;
+
+  return [
+    ...post.content,
+    `${post.title} is an important topic for any business that depends on trust, visibility and repeat customers. ${post.excerpt} For a printing business, this subject is practical rather than theoretical because customers judge quality through the materials they can see, touch and carry with them. A visiting card, brochure, label, flyer, sign board or invoice may look like a small item, but it often becomes the first proof that a company is organized and serious about its work.`,
+    `The biggest advantage of planning print properly is consistency. When colors, paper quality, finishing, logo placement and contact details stay consistent across different items, the brand becomes easier to remember. Customers do not need to study the design to feel the difference. They simply notice that the business looks neat, reliable and professional. This matters for shops, clinics, offices, restaurants, events, schools, real estate teams and service providers because printed material is still used every day in local business communication.`,
+    `A strong ${post.tag.toLowerCase()} plan should begin with the purpose of the item. A brochure needs to explain. A flyer needs to attract attention quickly. A label needs to be readable and durable. A banner needs to be visible from a distance. A visiting card needs to make contact details easy to save. When the purpose is clear, it becomes easier to choose the right size, material, print method and finishing option. This prevents waste and helps the final output work harder for the business.`,
+    `Design also plays a major role. Simple layouts usually perform better than crowded ones because customers can understand the message quickly. Clear headings, enough spacing, readable fonts and good contrast make printed material easier to scan. Product photos, icons and brand colors should support the message instead of competing with it. Even small corrections, such as aligning text or improving margins, can make the final piece feel more premium without increasing the printing cost too much.`,
+    `Material selection is another decision that affects the final impression. A thicker card can make a visiting card feel more valuable. Gloss or matte lamination can protect frequently handled items. Vinyl, flex, sunboard and non-tearable sticker materials are useful when the print needs to survive outdoor conditions or rough handling. Paper stickers may be enough for indoor packaging, while waterproof labels may be better for products that travel, sit in refrigerators or face moisture.`,
+    `Businesses should also think about quantity and timing. Digital printing is useful for small batches, urgent jobs and designs that may change. Offset or larger production methods can make sense when the quantity is high and the artwork is final. Planning ahead gives the printer more room to check files, correct sizes, match colors and finish the job neatly. Last-minute printing is possible, but important brand material always benefits from a little breathing room.`,
+    `Before sending artwork for print, check the basics carefully. Confirm phone numbers, addresses, spelling, QR codes, social handles, prices, offers and product names. Make sure images are clear enough for the final size. If the print will be cut, folded, punched or laminated, keep important text away from the edges. These checks are small, but they save money and avoid reprinting. A good proofing habit is one of the simplest ways to protect print quality.`,
+    `For Morya Printing Point customers, the best approach is to share the business goal along with the artwork. Instead of only asking for a size and quantity, explain where the item will be used and who will see it. That helps the team suggest practical paper, material, finishing and production options. With the right combination of design, material and execution, printed products can support sales, improve recall and make the business look more trustworthy in every customer interaction.`,
+  ];
+}
+
 export function Blog() {
+  const [blogPosts, setBlogPosts] = useState<BlogCard[]>(posts);
+
+  useEffect(() => {
+    api<{ posts: ApiBlogPost[] }>("/api/blog-posts")
+      .then((result) => {
+        if (result.posts.length) {
+          setBlogPosts(result.posts.map(toBlogCard));
+        }
+      })
+      .catch(() => setBlogPosts(posts));
+  }, []);
+
   return (
     <SiteLayout>
-      <PageHero eyebrow="Blog" title="Insights from the print & signage floor." subtitle="Practical guides and industry perspectives from our team." crumb="Blog" />
+      <PageHero
+        eyebrow="Blog"
+        title="Insights from the print & signage floor."
+        subtitle="Practical guides and industry perspectives from our team."
+        crumb="Blog"
+      />
 
-      <section className="container-x py-20 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {posts.map((p) => (
-          <article key={p.title} className="card-lift rounded-2xl border bg-white overflow-hidden group">
-            <div className="relative aspect-[16/10] overflow-hidden">
-              <img src={p.img} alt={p.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <span className="absolute top-4 left-4 rounded-full bg-orange px-3 py-1 text-[11px] font-semibold text-white uppercase tracking-wide">{p.tag}</span>
-            </div>
+      <section className="container-x grid gap-6 py-20 md:grid-cols-2 lg:grid-cols-3">
+        {blogPosts.map((post) => (
+          <article
+            key={post.slug}
+            className="card-lift group overflow-hidden rounded-2xl border bg-white"
+          >
+            <Link to="/blog/$slug" params={{ slug: post.slug }} className="block">
+              <div className="relative aspect-[16/10] overflow-hidden">
+                <img
+                  src={post.img}
+                  alt={post.title}
+                  loading="lazy"
+                  className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <span className="absolute left-4 top-4 rounded-full bg-orange px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                  {post.tag}
+                </span>
+              </div>
+            </Link>
             <div className="p-6">
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <Calendar className="h-3.5 w-3.5" /> {p.date}
+                <Calendar className="h-3.5 w-3.5" /> {post.date}
               </div>
-              <h3 className="mt-2 font-display font-bold text-lg text-navy leading-snug">{p.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{p.excerpt}</p>
-              <button className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-navy hover:text-orange transition-colors">
+              <h3 className="mt-2 font-display text-lg font-bold leading-snug text-navy">
+                <Link
+                  to="/blog/$slug"
+                  params={{ slug: post.slug }}
+                  className="transition-colors hover:text-orange"
+                >
+                  {post.title}
+                </Link>
+              </h3>
+              <p className="mt-2 text-sm text-muted-foreground">{post.excerpt}</p>
+              <Link
+                to="/blog/$slug"
+                params={{ slug: post.slug }}
+                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-navy transition-colors hover:text-orange"
+              >
                 Read more <ArrowRight className="h-4 w-4" />
-              </button>
+              </Link>
             </div>
           </article>
         ))}
       </section>
+
+      <CTA />
+    </SiteLayout>
+  );
+}
+
+export function BlogDetail({ slug }: { slug: string }) {
+  const [post, setPost] = useState<BlogCard | null>(
+    posts.find((item) => item.slug === slug) ?? null,
+  );
+
+  useEffect(() => {
+    api<{ posts: ApiBlogPost[] }>("/api/blog-posts")
+      .then((result) => {
+        const savedPost = result.posts.find((item) => item.slug === slug);
+        if (savedPost) setPost(toBlogCard(savedPost));
+      })
+      .catch(() => undefined);
+  }, [slug]);
+
+  if (!post) {
+    return (
+      <SiteLayout>
+        <PageHero
+          eyebrow="Blog"
+          title="Blog post not found"
+          subtitle="The article you are looking for may have been moved or removed."
+          crumb="Blog"
+        />
+        <section className="container-x py-16">
+          <Link
+            to="/blog"
+            className="inline-flex items-center gap-2 rounded-full bg-navy px-5 py-3 text-sm font-bold text-white"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to Blog
+          </Link>
+        </section>
+      </SiteLayout>
+    );
+  }
+
+  return (
+    <SiteLayout>
+      <PageHero eyebrow={post.tag} title={post.title} subtitle={post.excerpt} crumb="Blog" />
+
+      <article className="container-x py-16">
+        <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border bg-white">
+          <img src={post.img} alt={post.title} className="aspect-[16/8] w-full object-cover" />
+          <div className="p-6 md:p-10">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" /> {post.date}
+            </div>
+            <div className="mt-6 space-y-5 text-base leading-8 text-muted-foreground">
+              {fullArticle(post).map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </div>
+            <Link
+              to="/blog"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-navy px-5 py-3 text-sm font-bold text-white"
+            >
+              <ArrowLeft className="h-4 w-4" /> Back to Blog
+            </Link>
+          </div>
+        </div>
+      </article>
 
       <CTA />
     </SiteLayout>

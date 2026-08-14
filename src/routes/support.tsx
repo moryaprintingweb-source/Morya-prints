@@ -1,6 +1,10 @@
 import { InfoPage } from "../components/site/InfoPage";
+import { usePublicSiteSettings } from "../lib/site-settings";
 
 export function Support() {
+  const { getSetting } = usePublicSiteSettings();
+  const phoneDisplay = getSetting("business_phone_display");
+
   return (
     <InfoPage
       eyebrow="Support"
@@ -27,7 +31,7 @@ export function Support() {
         {
           title: "Contact support",
           items: [
-            "Call +91 85548 42103 for quick assistance.",
+            `Call ${phoneDisplay} for quick assistance.`,
             "WhatsApp product requirements, files and reference images directly.",
             "Visit the Kothrud shop for in-person consultation and sample checks.",
           ],

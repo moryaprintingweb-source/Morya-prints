@@ -16,7 +16,9 @@ dist-ssr
 .tanstack/**
 .nitro
 *.local
+.env
 .playwright-cli/
+output/
 tmp/
 
 # Wrangler / Cloudflare

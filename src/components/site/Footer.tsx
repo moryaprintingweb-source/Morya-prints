@@ -10,6 +10,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react";
+import { usePublicSiteSettings, whatsappHref } from "../../lib/site-settings";
 
 const shopLinks = [
   "Visiting Cards",
@@ -23,6 +24,15 @@ const shopLinks = [
 ];
 
 export function Footer() {
+  const { getSetting } = usePublicSiteSettings();
+  const phoneDisplay = getSetting("business_phone_display");
+  const phoneLink = getSetting("business_phone_link");
+  const whatsappNumber = getSetting("business_whatsapp_number");
+  const email = getSetting("business_email");
+  const address = getSetting("business_address");
+  const mapsUrl = getSetting("business_maps_url");
+  const googleUrl = getSetting("business_google_url");
+
   return (
     <footer className="mt-20 bg-navy text-white/80">
       <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
@@ -42,7 +52,11 @@ export function Footer() {
           </p>
           <div className="mt-5 flex gap-3">
             {[
-              [Facebook, "Facebook", "https://www.facebook.com/people/Morya-Printing-Point/pfbid02LV2uRUNe3BpdhRbeRCNPQ8zKjtMyEoxEhGKUGzispXfvtZoAQYMR5GskABgw4rrCl/"],
+              [
+                Facebook,
+                "Facebook",
+                "https://www.facebook.com/people/Morya-Printing-Point/pfbid02LV2uRUNe3BpdhRbeRCNPQ8zKjtMyEoxEhGKUGzispXfvtZoAQYMR5GskABgw4rrCl/",
+              ],
               [Instagram, "Instagram", "https://www.instagram.com/morya_printing_point/"],
               [Youtube, "YouTube", "https://www.youtube.com/@moryadigitalprinting"],
               [Twitter, "X", "https://x.com/shendedesign"],
@@ -113,18 +127,18 @@ export function Footer() {
           <ul className="space-y-3 text-sm">
             <li>
               <a
-                href="https://maps.app.goo.gl/TSBbNMXqBig85rtJ9"
+                href={mapsUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="flex gap-3 hover:text-orange"
               >
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
-                Shop No. 3, Jeet Building, near Jeet Ground, Lokmanya Colony, Kothrud, Pune 411038
+                {address}
               </a>
             </li>
             <li>
               <a
-                href="https://share.google/3stt5fmHZPr0ByYUY"
+                href={googleUrl}
                 target="_blank"
                 rel="noreferrer"
                 className="flex gap-3 hover:text-orange"
@@ -134,21 +148,21 @@ export function Footer() {
               </a>
             </li>
             <li>
-              <a href="tel:+918554842103" className="flex gap-3 hover:text-orange">
+              <a href={`tel:${phoneLink}`} className="flex gap-3 hover:text-orange">
                 <Phone className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
-                +91 85548 42103
+                {phoneDisplay}
               </a>
             </li>
             <li>
-              <a href="https://wa.me/918554842103" className="flex gap-3 hover:text-orange">
+              <a href={whatsappHref(whatsappNumber)} className="flex gap-3 hover:text-orange">
                 <MessageCircle className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
                 WhatsApp us
               </a>
             </li>
             <li>
-              <a href="mailto:Moryaprintingweb@gmail.com" className="flex gap-3 hover:text-orange">
+              <a href={`mailto:${email}`} className="flex gap-3 hover:text-orange">
                 <Mail className="mt-0.5 h-4 w-4 shrink-0 text-orange" />
-                Moryaprintingweb@gmail.com
+                {email}
               </a>
             </li>
           </ul>

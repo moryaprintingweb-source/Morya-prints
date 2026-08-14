@@ -45,7 +45,9 @@ export function Link({
   const currentPath = typeof window === "undefined" ? "" : window.location.pathname;
   const isActive = activeOptions?.exact ? currentPath === path : currentPath.startsWith(path);
   const mergedClassName =
-    isActive && activeProps?.className ? `${className ?? ""} ${activeProps.className}`.trim() : className;
+    isActive && activeProps?.className
+      ? `${className ?? ""} ${activeProps.className}`.trim()
+      : className;
 
   return (
     <a href={href} className={mergedClassName} {...props}>

@@ -14,6 +14,8 @@ import {
 import { SiteLayout } from "../components/site/SiteLayout";
 import { CTA } from "../components/site/CTA";
 import { allProducts as catalogProducts, catalog, featuredProducts } from "../data/catalog";
+import { api, type ApiCategory, type ApiProduct } from "../lib/api";
+import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 import heroImg from "../assets/hero.jpg";
 import printingImg from "../assets/printing.jpg";
 import ledImg from "../assets/led-sign.jpg";
@@ -39,7 +41,10 @@ const categoryHighlights = [
 
 const homeVisuals = [heroImg, printingImg, ledImg];
 
-const heroSlides = [
+type SiteSettingMap = Record<string, { value: string; label: string }>;
+type PublicCategory = ApiCategory & { product_count?: number };
+
+const defaultHeroSlides = [
   {
     image: heroImg,
     eyebrow: "Business essentials",
@@ -73,15 +78,29 @@ const heroSlides = [
 ];
 
 export function Home() {
-  const highlightedCategories = categoryHighlights
-    .map((slug) => catalog.find((category) => category.slug === slug))
-    .filter(Boolean)
-    .concat(catalog)
-    .filter(
-      (category, index, items) =>
-        items.findIndex((item) => item?.slug === category?.slug) === index,
-    )
-    .slice(0, 10);
+  const { getSetting } = usePublicSiteSettings();
+  const whatsappNumber = getSetting("business_whatsapp_number");
+  const [siteSettings, setSiteSettings] = useState<SiteSettingMap>({});
+  const [homepageCategories, setHomepageCategories] = useState<PublicCategory[]>(
+    categoryHighlights
+      .map((slug) => catalog.find((category) => category.slug === slug))
+      .filter(Boolean)
+      .concat(catalog)
+      .filter(
+        (category, index, items) =>
+          items.findIndex((item) => item?.slug === category?.slug) === index,
+      )
+      .slice(0, 10)
+      .map((category, index) => ({
+        id: index + 1,
+        slug: category!.slug,
+        name: category!.name,
+        eyebrow: category!.eyebrow,
+        is_active: 1,
+        sort_order: index,
+        product_count: category!.products.length,
+      })),
+  );
   const popular = featuredProducts.slice(0, 6);
   const trending = catalogProducts.slice(5, 11);
   const labelsAndPackaging = catalogProducts.filter((item) =>
@@ -89,23 +108,71 @@ export function Home() {
   );
   const exploreMore = catalogProducts.slice(36, 42);
   const newArrivals = catalogProducts.slice(70, 76);
+  const promoLeftImage = settingImage(siteSettings, "home_promo_left_image", ledImg);
+  const promoRightImage = settingImage(siteSettings, "home_promo_right_image", printingImg);
+
+  useEffect(() => {
+    Promise.allSettled([
+      api<{ settings: SiteSettingMap }>("/api/site-settings"),
+      api<{ categories: PublicCategory[] }>("/api/categories"),
+      api<{ products: ApiProduct[] }>("/api/products"),
+    ]).then(([settingsResult, categoriesResult, productsResult]) => {
+      if (settingsResult.status === "fulfilled") {
+        setSiteSettings(settingsResult.value.settings);
+      }
+      if (categoriesResult.status === "fulfilled") {
+        const productCounts =
+          productsResult.status === "fulfilled"
+            ? productsResult.value.products.reduce<Record<string, number>>((acc, product) => {
+                acc[product.category.slug] = (acc[product.category.slug] ?? 0) + 1;
+                return acc;
+              }, {})
+            : {};
+        setHomepageCategories(
+          categoriesResult.value.categories.map((category) => ({
+            ...category,
+            product_count: Number(category.product_count ?? productCounts[category.slug] ?? 0),
+          })),
+        );
+      }
+    });
+  }, []);
 
   return (
     <SiteLayout>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
-      <HeroCarousel />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <HeroCarousel settings={siteSettings} />
 
-      <section className="bg-white py-10 md:py-14">
-        <div className="container-x grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-          <Trust icon={Truck} title="Fast Printing & Delivery" text="Same-day dispatch across Pune & nearby areas" />
-          <Trust icon={ShieldCheck} title="Premium Print Quality" text="Quality checked before every delivery" />
-          <Trust icon={Sparkles} title="Complete Printing Solution" text="Cards, flyers, banners, stickers & more" />
-          <Trust icon={Headphones} title="Friendly Customer Support" text="Call, WhatsApp or visit our store" />
+      <section className="container-x bg-white py-10 md:py-14">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <Trust
+            icon={Truck}
+            title="Fast Printing & Delivery"
+            text="Same-day dispatch across Pune & nearby areas"
+          />
+          <Trust
+            icon={ShieldCheck}
+            title="Premium Print Quality"
+            text="Quality checked before every delivery"
+          />
+          <Trust
+            icon={Sparkles}
+            title="Complete Printing Solution"
+            text="Cards, flyers, banners, stickers & more"
+          />
+          <Trust
+            icon={Headphones}
+            title="Friendly Customer Support"
+            text="Call, WhatsApp or visit our store"
+          />
         </div>
       </section>
 
-      <section className="bg-navy py-10 text-white">
-        <div className="container-x grid gap-7 text-center sm:grid-cols-3">
+      <section className="container-x bg-navy py-10 text-white">
+        <div className="grid gap-7 text-center sm:grid-cols-3">
           <Stat value="10,000+" label="Orders" />
           <Stat value="2,000+" label="Customers" />
           <Stat value="200+" label="Products" />
@@ -113,11 +180,13 @@ export function Home() {
       </section>
 
       <CategoryCarousel
-        categories={highlightedCategories.map((category, index) => ({
-          name: category!.name,
-          image: categoryImage(category!, index),
-          slug: category!.slug,
-          tag: "5 products",
+        categories={homepageCategories.map((category, index) => ({
+          name: category.name,
+          image: categoryImage(category.slug, index),
+          slug: category.slug,
+          tag: `${category.product_count ?? 0} ${
+            Number(category.product_count ?? 0) === 1 ? "product" : "products"
+          }`,
         }))}
       />
 
@@ -160,12 +229,20 @@ export function Home() {
         }))}
       />
 
-      <section className="border-y bg-white">
-        <div className="container-x grid gap-px bg-border lg:grid-cols-2">
+      <section className="container-x border-y bg-white">
+        <div className="grid gap-px bg-border lg:grid-cols-2">
           <PromoBand
-            image={ledImg}
-            eyebrow="Preserve a premium first impression"
-            title="Print polished brochures, letter heads and bill books."
+            image={promoLeftImage}
+            eyebrow={settingText(
+              siteSettings,
+              "home_promo_left_eyebrow",
+              "Preserve a premium first impression",
+            )}
+            title={settingText(
+              siteSettings,
+              "home_promo_left_title",
+              "Print polished brochures, letter heads and bill books.",
+            )}
             actions={[
               { label: "Brochures", slug: "brochure-book" },
               { label: "Letter Head", slug: "letter-head" },
@@ -173,9 +250,17 @@ export function Home() {
             ]}
           />
           <PromoBand
-            image={printingImg}
-            eyebrow="Wear and display your brand"
-            title="Custom stickers, flex, vinyl and sunboard prints for teams and events."
+            image={promoRightImage}
+            eyebrow={settingText(
+              siteSettings,
+              "home_promo_right_eyebrow",
+              "Wear and display your brand",
+            )}
+            title={settingText(
+              siteSettings,
+              "home_promo_right_title",
+              "Custom stickers, flex, vinyl and sunboard prints for teams and events.",
+            )}
             actions={[
               { label: "Stickers", slug: "stickers-labels" },
               { label: "Flex Printing", slug: "flex-printing" },
@@ -207,8 +292,8 @@ export function Home() {
         }))}
       />
 
-      <section className="bg-soft py-14">
-        <div className="container-x grid gap-8 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
+      <section className="container-x bg-soft py-14">
+        <div className="grid gap-8 lg:grid-cols-[.95fr_1.05fr] lg:items-center">
           <img
             src={heroImg}
             alt="Printed stationery samples"
@@ -226,7 +311,7 @@ export function Home() {
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
               <a
-                href="https://wa.me/918554842103"
+                href={whatsappHref(whatsappNumber)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-primary"
@@ -290,23 +375,41 @@ export function Home() {
         <div className="mb-7">
           <span className="eyebrow">Need help?</span>
           <h2 className="mt-3 section-title">Frequently Asked Questions (FAQs)</h2>
-          <p className="mt-3 text-muted-foreground">Quick answers before you place your print order.</p>
+          <p className="mt-3 text-muted-foreground">
+            Quick answers before you place your print order.
+          </p>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           {[homeFaqs.slice(0, 6), homeFaqs.slice(6)].map((column, columnIndex) => (
-            <Accordion key={columnIndex} type="single" collapsible className="border border-border bg-white">
+            <Accordion
+              key={columnIndex}
+              type="single"
+              collapsible
+              className="border border-border bg-white"
+            >
               {column.map((faq, index) => (
-                <AccordionItem key={faq.question} value={`faq-${columnIndex}-${index}`} className="px-5 last:border-b-0">
+                <AccordionItem
+                  key={faq.question}
+                  value={`faq-${columnIndex}-${index}`}
+                  className="px-5 last:border-b-0"
+                >
                   <AccordionTrigger className="min-h-12 py-3 font-semibold text-navy hover:no-underline">
                     {faq.question}
                   </AccordionTrigger>
-                  <AccordionContent className="leading-relaxed text-muted-foreground">{faq.answer}</AccordionContent>
+                  <AccordionContent className="leading-relaxed text-muted-foreground">
+                    {faq.answer}
+                  </AccordionContent>
                 </AccordionItem>
               ))}
             </Accordion>
           ))}
         </div>
-        <Link to="/faq" className="mt-6 inline-flex text-sm font-semibold text-orange hover:text-navy">View all FAQs <ArrowRight className="ml-1 h-4 w-4" /></Link>
+        <Link
+          to="/faq"
+          className="mt-6 inline-flex text-sm font-semibold text-orange hover:text-navy"
+        >
+          View all FAQs <ArrowRight className="ml-1 h-4 w-4" />
+        </Link>
       </section>
 
       <CTA />
@@ -314,17 +417,70 @@ export function Home() {
   );
 }
 
+function settingImage(settings: SiteSettingMap, key: string, fallback: string) {
+  return settings[key]?.value?.trim() || fallback;
+}
+
+function settingText(settings: SiteSettingMap, key: string, fallback: string) {
+  return settings[key]?.value?.trim() || fallback;
+}
+
 const googleBusinessProfile = "https://share.google/mgKsD0HQ5OS26Xewa";
 const googleReviews = [
-  { name: "Anil Kumar", rating: 5, title: "Excellent print quality", text: "Dependable service, quality work and helpful support whenever needed." },
-  { name: "Deveshree Shinde", rating: 5, title: "Quick and helpful", text: "Same-day foam-board delivery with co-operative service and excellent quality." },
-  { name: "Vilas Mulay", rating: 5, title: "Great technical support", text: "Helpful guidance, a strong product range and quality flex and pamphlet printing." },
-  { name: "Yasser Shaikh", rating: 5, title: "Very professional", text: "Great service and quality in the finished work." },
-  { name: "Ram Kelkar", rating: 5, title: "Happy with the service", text: "Good print quality, timely work, reasonable pricing and friendly communication." },
-  { name: "Mansi Makhi", rating: 4, title: "Good experience", text: "Useful design guidance, quick delivery and polite staff." },
-  { name: "Avinash Ramgude", rating: 5, title: "Reliable printing partner", text: "Good quality, material guidance, reasonable rates and timely sticker printing." },
-  { name: "Amit Phadke", rating: 5, title: "Highly recommended", text: "Strong design skills and customer-first, end-to-end printing support." },
-  { name: "Subodh Vaidya", rating: 5, title: "Fast response", text: "Quick delivery, fast communication and reasonable pricing." },
+  {
+    name: "Anil Kumar",
+    rating: 5,
+    title: "Excellent print quality",
+    text: "Dependable service, quality work and helpful support whenever needed.",
+  },
+  {
+    name: "Deveshree Shinde",
+    rating: 5,
+    title: "Quick and helpful",
+    text: "Same-day foam-board delivery with co-operative service and excellent quality.",
+  },
+  {
+    name: "Vilas Mulay",
+    rating: 5,
+    title: "Great technical support",
+    text: "Helpful guidance, a strong product range and quality flex and pamphlet printing.",
+  },
+  {
+    name: "Yasser Shaikh",
+    rating: 5,
+    title: "Very professional",
+    text: "Great service and quality in the finished work.",
+  },
+  {
+    name: "Ram Kelkar",
+    rating: 5,
+    title: "Happy with the service",
+    text: "Good print quality, timely work, reasonable pricing and friendly communication.",
+  },
+  {
+    name: "Mansi Makhi",
+    rating: 4,
+    title: "Good experience",
+    text: "Useful design guidance, quick delivery and polite staff.",
+  },
+  {
+    name: "Avinash Ramgude",
+    rating: 5,
+    title: "Reliable printing partner",
+    text: "Good quality, material guidance, reasonable rates and timely sticker printing.",
+  },
+  {
+    name: "Amit Phadke",
+    rating: 5,
+    title: "Highly recommended",
+    text: "Strong design skills and customer-first, end-to-end printing support.",
+  },
+  {
+    name: "Subodh Vaidya",
+    rating: 5,
+    title: "Fast response",
+    text: "Quick delivery, fast communication and reasonable pricing.",
+  },
 ];
 
 function ReviewsWall() {
@@ -333,27 +489,44 @@ function ReviewsWall() {
   );
 
   return (
-    <section className="overflow-hidden bg-white py-14 md:py-16">
-      <div className="container-x grid gap-10 lg:grid-cols-[minmax(235px,.62fr)_minmax(0,1.88fr)] lg:items-center lg:gap-14">
+    <section className="container-x overflow-hidden bg-white py-14 md:py-16">
+      <div className="grid gap-10 lg:grid-cols-[minmax(235px,.62fr)_minmax(0,1.88fr)] lg:items-center lg:gap-14">
         <div className="lg:self-center">
           <span className="eyebrow">Google reviews</span>
           <h2 className="mt-3 font-display text-3xl font-bold leading-[1.02] text-navy sm:text-4xl">
-            True Journeys. True<br />
+            True Journeys. True
+            <br />
             Transformation.
           </h2>
-          <a href={googleBusinessProfile} target="_blank" rel="noreferrer" className="mt-4 inline-flex flex-col gap-1 transition hover:opacity-80">
+          <a
+            href={googleBusinessProfile}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-4 inline-flex flex-col gap-1 transition hover:opacity-80"
+          >
             <span className="flex items-center gap-1.5 font-display text-lg font-bold text-navy">
-              <span className="text-[#4285f4]">G</span> 4.8 <Star className="h-4 w-4 fill-[#fbbc04] text-[#fbbc04]" />
+              <span className="text-[#4285f4]">G</span> 4.8{" "}
+              <Star className="h-4 w-4 fill-[#fbbc04] text-[#fbbc04]" />
             </span>
-            <span className="text-[11px] font-medium text-muted-foreground">from 223 Google reviews</span>
+            <span className="text-[11px] font-medium text-muted-foreground">
+              from 223 Google reviews
+            </span>
           </a>
-          <a href={googleBusinessProfile} target="_blank" rel="noreferrer" className="mt-7 inline-flex items-center text-sm font-bold text-orange transition hover:text-navy">
+          <a
+            href={googleBusinessProfile}
+            target="_blank"
+            rel="noreferrer"
+            className="mt-7 inline-flex items-center text-sm font-bold text-orange transition hover:text-navy"
+          >
             Read all reviews <ArrowRight className="ml-1.5 h-4 w-4" />
           </a>
         </div>
         <div className="reviews-marquee grid h-[390px] grid-cols-1 gap-4 overflow-hidden sm:grid-cols-2 lg:h-[430px] lg:grid-cols-3">
           {reviewColumns.map((reviews, columnIndex) => (
-            <div key={columnIndex} className={`reviews-marquee-track reviews-marquee-track-${columnIndex + 1}`}>
+            <div
+              key={columnIndex}
+              className={`reviews-marquee-track reviews-marquee-track-${columnIndex + 1}`}
+            >
               {[...reviews, ...reviews].map((review, index) => (
                 <ReviewCard key={`${review.name}-${index}`} review={review} />
               ))}
@@ -376,7 +549,10 @@ function ReviewCard({ review }: { review: (typeof googleReviews)[number] }) {
     >
       <div className="flex gap-0.5 text-[#fbbc04]">
         {Array.from({ length: 5 }).map((_, starIndex) => (
-          <Star key={starIndex} className={`h-3 w-3 ${starIndex < review.rating ? "fill-current" : "fill-slate-200 text-slate-200"}`} />
+          <Star
+            key={starIndex}
+            className={`h-3 w-3 ${starIndex < review.rating ? "fill-current" : "fill-slate-200 text-slate-200"}`}
+          />
         ))}
       </div>
       <h3 className="mt-3 text-sm font-extrabold text-navy">{review.title}</h3>
@@ -386,21 +562,23 @@ function ReviewCard({ review }: { review: (typeof googleReviews)[number] }) {
   );
 }
 
-function categoryImage(category: (typeof catalog)[number], index: number) {
-  const categorySpecific: Record<string, string> = {
+function categoryImage(slug: string, index: number) {
+  const sourceCategory = catalog.find((category) => category.slug === slug);
+  const firstProductImage = sourceCategory?.products[0]?.image;
+  const categorySpecific: Record<string, string | undefined> = {
     "visiting-cards": heroImg,
-    "bill-book": category.products[0].image,
-    "letter-head": category.products[0].image,
-    envelope: category.products[0].image,
+    "bill-book": firstProductImage,
+    "letter-head": firstProductImage,
+    envelope: firstProductImage,
     "stickers-labels": ledImg,
-    "flyers-pamphlets": category.products[0].image,
-    "vinyl-printing": category.products[0].image,
-    "flex-printing": category.products[0].image,
+    "flyers-pamphlets": firstProductImage,
+    "vinyl-printing": firstProductImage,
+    "flex-printing": firstProductImage,
     sunboard: ledImg,
-    "brochure-book": category.products[0].image,
+    "brochure-book": firstProductImage,
   };
 
-  return categorySpecific[category.slug] ?? homeVisuals[index % homeVisuals.length];
+  return categorySpecific[slug] ?? homeVisuals[index % homeVisuals.length];
 }
 
 function productImage(image: string | undefined, index: number) {
@@ -416,19 +594,32 @@ function productImage(image: string | undefined, index: number) {
   return repeatedGeneric ? homeVisuals[index % homeVisuals.length] : image;
 }
 
-function HeroCarousel() {
+function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
   const [activeSlide, setActiveSlide] = useState(0);
+  const heroSlides = defaultHeroSlides.map((slide, index) => ({
+    ...slide,
+    image: settingImage(settings, `home_hero_${index + 1}_image`, slide.image),
+    eyebrow: settingText(settings, `home_hero_${index + 1}_eyebrow`, slide.eyebrow),
+    title: settingText(settings, `home_hero_${index + 1}_title`, slide.title),
+    text: settingText(settings, `home_hero_${index + 1}_text`, slide.text),
+    actions: [
+      {
+        label: settingText(settings, `home_hero_${index + 1}_button`, slide.actions[0].label),
+        slug: settingText(settings, `home_hero_${index + 1}_slug`, slide.actions[0].slug),
+      },
+    ],
+  }));
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveSlide((current) => (current + 1) % heroSlides.length);
+      setActiveSlide((current) => (current + 1) % defaultHeroSlides.length);
     }, 4500);
 
     return () => window.clearInterval(timer);
   }, []);
 
   return (
-    <section className="border-b bg-white">
+    <section className="w-full border-b bg-white">
       <div className="relative min-h-[520px] overflow-hidden bg-navy md:min-h-[560px]">
         {heroSlides.map((slide, index) => (
           <div
@@ -443,10 +634,10 @@ function HeroCarousel() {
           </div>
         ))}
 
-        <div className="container-x relative z-10 flex min-h-[520px] items-end py-8 md:min-h-[560px] md:items-center md:py-14">
-          <div className="max-w-2xl rounded-2xl border border-white/20 bg-white/80 p-5 shadow-2xl backdrop-blur md:p-8">
+        <div className="relative z-10 flex min-h-[520px] items-end px-4 py-8 md:min-h-[560px] md:items-center md:px-8 md:py-14">
+          <div className="w-full max-w-2xl rounded-2xl border border-white/20 bg-white/80 p-5 shadow-2xl backdrop-blur md:p-8">
             <span className="eyebrow">{heroSlides[activeSlide].eyebrow}</span>
-            <h1 className="mt-3 font-display text-3xl font-semibold leading-tight text-navy md:text-5xl">
+            <h1 className="mt-3 break-words font-display text-3xl font-semibold leading-tight text-navy md:text-5xl">
               {heroSlides[activeSlide].title}
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -552,11 +743,20 @@ function CategoryCarousel({
             className="group w-[78%] shrink-0 snap-start overflow-hidden rounded-lg border bg-white transition hover:-translate-y-1 hover:border-cyan hover:shadow-[0_18px_34px_-24px_rgba(11,31,58,.55)] sm:w-[260px] lg:w-[280px]"
           >
             <div className="relative aspect-[5/4] overflow-hidden bg-soft">
-              <img src={category.image} alt={category.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+              <img
+                src={category.image}
+                alt={category.name}
+                loading="lazy"
+                className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+              />
             </div>
             <div className="p-3">
-              <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-orange">{category.tag}</div>
-              <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-snug text-navy">{category.name}</h3>
+              <div className="mb-1 text-[10px] font-bold uppercase tracking-wide text-orange">
+                {category.tag}
+              </div>
+              <h3 className="line-clamp-2 min-h-10 text-sm font-extrabold leading-snug text-navy">
+                {category.name}
+              </h3>
             </div>
           </Link>
         ))}
@@ -598,9 +798,7 @@ function ProductSection({
               {...linkProps}
               className="group overflow-hidden rounded-lg border bg-white transition hover:-translate-y-1 hover:border-cyan hover:shadow-[0_18px_34px_-24px_rgba(11,31,58,.55)]"
             >
-              <div
-                className="aspect-[5/4] relative overflow-hidden bg-soft"
-              >
+              <div className="aspect-[5/4] relative overflow-hidden bg-soft">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -646,11 +844,13 @@ function PromoBand({
     <div className="relative min-h-[360px] overflow-hidden bg-navy">
       <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-85" />
       <div className="absolute inset-0 bg-gradient-to-t from-navy/55 via-transparent to-transparent" />
-      <div className="absolute bottom-6 left-5 right-5 rounded-lg bg-white p-5 shadow-xl md:left-8 md:right-auto md:max-w-[340px]">
+      <div className="absolute bottom-4 left-4 right-4 rounded-lg bg-white p-4 shadow-xl sm:bottom-6 sm:left-5 sm:right-5 sm:p-5 md:left-8 md:right-auto md:max-w-[340px]">
         <span className="text-xs font-extrabold uppercase tracking-wide text-orange">
           {eyebrow}
         </span>
-        <h2 className="mt-2 font-display text-2xl font-bold leading-tight text-navy">{title}</h2>
+        <h2 className="mt-2 break-words font-display text-xl font-bold leading-tight text-navy sm:text-2xl">
+          {title}
+        </h2>
         <div className="mt-4 flex flex-wrap gap-2">
           {actions.map((action) => (
             <Link
@@ -678,7 +878,9 @@ function Trust({ icon: Icon, title, text }: { icon: typeof Truck; title: string;
         <span className="mb-2.5 grid h-8 w-8 place-items-center rounded-full bg-orange text-white shadow-[0_8px_18px_-10px_rgba(249,115,22,.9)] sm:mb-3 sm:h-9 sm:w-9 lg:mb-4 lg:h-11 lg:w-11">
           <Icon className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6" strokeWidth={2.25} />
         </span>
-        <p className="text-xs font-semibold leading-snug text-navy/80 sm:text-sm lg:text-base">{text}</p>
+        <p className="text-xs font-semibold leading-snug text-navy/80 sm:text-sm lg:text-base">
+          {text}
+        </p>
       </div>
     </div>
   );
@@ -725,25 +927,77 @@ function Stat({ value, label }: { value: string; label: string }) {
 
   return (
     <div ref={counterRef}>
-      <div className="font-display text-4xl font-semibold text-white md:text-5xl">{displayValue.toLocaleString()}+</div>
-      <div className="mt-1 text-xs font-semibold uppercase tracking-[.16em] text-white/70">{label}</div>
+      <div className="font-display text-4xl font-semibold text-white md:text-5xl">
+        {displayValue.toLocaleString()}+
+      </div>
+      <div className="mt-1 text-xs font-semibold uppercase tracking-[.16em] text-white/70">
+        {label}
+      </div>
     </div>
   );
 }
 
 const homeFaqs = [
-  { question: "What services does Morya Printing Point offer?", answer: "Morya Printing Point offers visiting cards, flyers, brochures, letterheads, envelopes, menu cards, ID cards, flex printing, vinyl printing, one-way vision, frosted vinyl, transparent vinyl, banners, stickers, certificates, invitations and customised business printing solutions." },
-  { question: "Do you provide same-day printing?", answer: "Yes. We offer same-day printing for selected products such as standard visiting cards, flyers and document printing, depending on order quantity and artwork approval." },
-  { question: "Can I order a single print or small quantity?", answer: "Yes. We accept both single-piece and bulk printing orders. Whether you need one document or thousands of printed materials, we can help." },
-  { question: "What file formats do you accept?", answer: "We accept PDF, AI, CDR, PSD, JPG, PNG and other high-resolution print-ready files. For the best print quality, files should be prepared in CMYK colour mode." },
-  { question: "What are your most popular printing products?", answer: "Popular products include visiting cards, flyers, brochures, vinyl printing, flex banners, letterheads, ID cards, stickers, menu cards and wedding invitations." },
-  { question: "Do you print custom-sized products?", answer: "Yes. We provide custom sizes and finishing options based on your requirements. Contact us for personalised printing solutions." },
-  { question: "How long does printing take?", answer: "Turnaround time depends on the product and quantity. Many standard jobs are completed within the same day, while larger or customised orders may take one to three business days." },
-  { question: "Do you deliver printed products?", answer: "Yes. We offer local delivery and can arrange shipping across India. Delivery charges and timelines depend on your location and order size." },
-  { question: "Why choose Morya Printing Point?", answer: "Morya Printing Point is known for high-quality printing, affordable pricing, fast turnaround, professional designs, premium materials and excellent customer support for businesses and individuals." },
-  { question: "Do you offer bulk-order discounts?", answer: "Yes. We provide special pricing for bulk printing orders. Contact us with your requirements for a customised quotation." },
-  { question: "What payment methods do you accept?", answer: "We accept cash, UPI, bank transfer, credit and debit cards, and other digital payment methods. GST is applicable as per government regulations." },
-  { question: "Do you print for businesses, schools and events?", answer: "Absolutely. We provide customised printing solutions for businesses, educational institutions, corporate events, exhibitions, restaurants, retail stores, weddings, birthdays and other special occasions." },
+  {
+    question: "What services does Morya Printing Point offer?",
+    answer:
+      "Morya Printing Point offers visiting cards, flyers, brochures, letterheads, envelopes, menu cards, ID cards, flex printing, vinyl printing, one-way vision, frosted vinyl, transparent vinyl, banners, stickers, certificates, invitations and customised business printing solutions.",
+  },
+  {
+    question: "Do you provide same-day printing?",
+    answer:
+      "Yes. We offer same-day printing for selected products such as standard visiting cards, flyers and document printing, depending on order quantity and artwork approval.",
+  },
+  {
+    question: "Can I order a single print or small quantity?",
+    answer:
+      "Yes. We accept both single-piece and bulk printing orders. Whether you need one document or thousands of printed materials, we can help.",
+  },
+  {
+    question: "What file formats do you accept?",
+    answer:
+      "We accept PDF, AI, CDR, PSD, JPG, PNG and other high-resolution print-ready files. For the best print quality, files should be prepared in CMYK colour mode.",
+  },
+  {
+    question: "What are your most popular printing products?",
+    answer:
+      "Popular products include visiting cards, flyers, brochures, vinyl printing, flex banners, letterheads, ID cards, stickers, menu cards and wedding invitations.",
+  },
+  {
+    question: "Do you print custom-sized products?",
+    answer:
+      "Yes. We provide custom sizes and finishing options based on your requirements. Contact us for personalised printing solutions.",
+  },
+  {
+    question: "How long does printing take?",
+    answer:
+      "Turnaround time depends on the product and quantity. Many standard jobs are completed within the same day, while larger or customised orders may take one to three business days.",
+  },
+  {
+    question: "Do you deliver printed products?",
+    answer:
+      "Yes. We offer local delivery and can arrange shipping across India. Delivery charges and timelines depend on your location and order size.",
+  },
+  {
+    question: "Why choose Morya Printing Point?",
+    answer:
+      "Morya Printing Point is known for high-quality printing, affordable pricing, fast turnaround, professional designs, premium materials and excellent customer support for businesses and individuals.",
+  },
+  {
+    question: "Do you offer bulk-order discounts?",
+    answer:
+      "Yes. We provide special pricing for bulk printing orders. Contact us with your requirements for a customised quotation.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept cash, UPI, bank transfer, credit and debit cards, and other digital payment methods. GST is applicable as per government regulations.",
+  },
+  {
+    question: "Do you print for businesses, schools and events?",
+    answer:
+      "Absolutely. We provide customised printing solutions for businesses, educational institutions, corporate events, exhibitions, restaurants, retail stores, weddings, birthdays and other special occasions.",
+  },
 ];
 
 const faqSchema = {

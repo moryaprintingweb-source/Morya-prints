@@ -1,10 +1,16 @@
 import { Link } from "../components/site/Link";
+import { useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
+import { api } from "../lib/api";
 import { useCart } from "../lib/cart";
+import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 
 export function Cart() {
   const { items, total, updateQuantity, removeItem, clearCart } = useCart();
+  const { getSetting } = usePublicSiteSettings();
+  const whatsappNumber = getSetting("business_whatsapp_number");
+  const [saveStatus, setSaveStatus] = useState("");
   const message = encodeURIComponent(
     `Hello Morya Printing Point, I want a quote for:\n${items
       .map((item) => {
@@ -18,6 +24,22 @@ export function Cart() {
         "\n",
       )}\nStarting estimate from website: Rs. ${total}\nPlease confirm the final price and delivery timeline.`,
   );
+  const saveQuoteRequest = async () => {
+    try {
+      setSaveStatus("Saving request...");
+      const result = await api<{ id: number }>("/api/orders", {
+        method: "POST",
+        body: JSON.stringify({
+          items,
+          total,
+          notes: "Created from website cart before WhatsApp quote request.",
+        }),
+      });
+      setSaveStatus(`Saved as quote request #${result.id}`);
+    } catch (error) {
+      setSaveStatus(error instanceof Error ? error.message : "Unable to save quote request");
+    }
+  };
 
   return (
     <SiteLayout>
@@ -129,13 +151,19 @@ export function Cart() {
                 with your quote.
               </p>
               <a
-                href={`https://wa.me/918554842103?text=${message}`}
+                href={whatsappHref(whatsappNumber, message)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-primary mt-6 w-full"
+                onClick={saveQuoteRequest}
               >
                 Request quote on WhatsApp
               </a>
+              {saveStatus && (
+                <p className="mt-3 text-xs font-semibold text-muted-foreground" role="status">
+                  {saveStatus}
+                </p>
+              )}
               <Link to="/products" className="btn-navy mt-3 w-full">
                 Continue shopping
               </Link>

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { ChevronDown, Menu, Search, X, ShoppingBag } from "lucide-react";
 import { useCart } from "../../lib/cart";
 import { catalog } from "../../data/catalog";
+import { api, type ApiCategory } from "../../lib/api";
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -20,6 +21,21 @@ export function Header() {
   const [mobileCategoriesOpen, setMobileCategoriesOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [search, setSearch] = useState("");
+  const [announcement, setAnnouncement] = useState(
+    "YOUR TRUSTED PRINTING PARTNER FOR FAST & QUALITY PRINTS.",
+  );
+  const [phoneDisplay, setPhoneDisplay] = useState("+91 85548 42103");
+  const [phoneLink, setPhoneLink] = useState("+918554842103");
+  const [categories, setCategories] = useState<ApiCategory[]>(
+    catalog.map((category, index) => ({
+      id: index + 1,
+      slug: category.slug,
+      name: category.name,
+      eyebrow: category.eyebrow,
+      is_active: 1,
+      sort_order: index,
+    })),
+  );
   const { count } = useCart();
 
   useEffect(() => {
@@ -35,6 +51,26 @@ export function Header() {
     }
   }, [open]);
 
+  useEffect(() => {
+    Promise.allSettled([
+      api<{ settings: Record<string, { value: string; label: string }> }>("/api/site-settings"),
+      api<{ categories: ApiCategory[] }>("/api/categories"),
+    ]).then(([settingsResult, categoriesResult]) => {
+      if (settingsResult.status === "fulfilled") {
+        const settings = settingsResult.value.settings;
+        const text = settings.announcement_bar_text?.value?.trim();
+        const displayPhone = settings.business_phone_display?.value?.trim();
+        const linkPhone = settings.business_phone_link?.value?.trim();
+        if (text) setAnnouncement(text);
+        if (displayPhone) setPhoneDisplay(displayPhone);
+        if (linkPhone) setPhoneLink(linkPhone);
+      }
+      if (categoriesResult.status === "fulfilled") {
+        setCategories(categoriesResult.value.categories);
+      }
+    });
+  }, []);
+
   return (
     <header
       className={`sticky top-0 z-50 w-full transition-all ${
@@ -44,21 +80,23 @@ export function Header() {
       }`}
     >
       <div className="overflow-hidden bg-red-600 py-1.5 text-center text-[11px] font-semibold uppercase tracking-[.1em] text-white">
-        <div className="header-ticker whitespace-nowrap">
-          YOUR TRUSTED PRINTING PARTNER FOR FAST &amp; QUALITY PRINTS.
-        </div>
+        <div className="header-ticker whitespace-nowrap">{announcement}</div>
       </div>
       <div className="border-b border-border/70 bg-soft/70 text-[11px] text-navy">
-        <div className="container-x flex items-center justify-between py-1.5">
+        <div className="container-x flex flex-wrap items-center justify-between gap-1 py-1.5">
           <span>Premium printing, made simple.</span>
-          <a href="tel:+918554842103" className="font-semibold">
-            Need help? +91 85548 42103
+          <a href={`tel:${phoneLink}`} className="font-semibold">
+            Need help? {phoneDisplay}
           </a>
         </div>
       </div>
       <div className="container-x flex h-20 items-center justify-between gap-3 py-2 md:h-22 md:py-3">
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <img src="/morya-icon-logo.png" alt="Morya Printing Point" className="h-14 w-14 md:h-16 md:w-16" />
+          <img
+            src="/morya-icon-logo.png"
+            alt="Morya Printing Point"
+            className="h-14 w-14 md:h-16 md:w-16"
+          />
           <div className="hidden sm:block leading-tight">
             <div className="font-display font-bold text-navy text-[15px]">Morya Printing Point</div>
             <div className="text-[10px] tracking-[0.16em] uppercase text-orange font-bold">
@@ -78,7 +116,7 @@ export function Header() {
                 >
                   Categories <ChevronDown className="h-3.5 w-3.5" />
                 </Link>
-                <div className="invisible absolute left-1/2 top-full z-50 w-[720px] -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                <div className="invisible absolute left-1/2 top-full z-50 w-[calc(100vw-2rem)] max-w-[720px] -translate-x-1/2 pt-3 opacity-0 transition group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                   <div className="rounded-xl border bg-white p-4 shadow-[0_24px_60px_-28px_rgba(30,58,138,.45)]">
                     <div className="mb-3 flex items-center justify-between border-b pb-3">
                       <div>
@@ -94,7 +132,7 @@ export function Header() {
                       </Link>
                     </div>
                     <div className="grid grid-cols-4 gap-2">
-                      {catalog.map((category) => (
+                      {categories.map((category) => (
                         <Link
                           key={category.slug}
                           to="/products"
@@ -126,10 +164,13 @@ export function Header() {
           className="hidden items-center rounded-md border border-border bg-white px-2 py-1.5 lg:flex"
           onSubmit={(event) => {
             event.preventDefault();
-            if (search.trim()) window.location.assign(`/products?search=${encodeURIComponent(search.trim())}`);
+            if (search.trim())
+              window.location.assign(`/products?search=${encodeURIComponent(search.trim())}`);
           }}
         >
-          <label htmlFor="site-search" className="sr-only">Search products</label>
+          <label htmlFor="site-search" className="sr-only">
+            Search products
+          </label>
           <input
             id="site-search"
             value={search}
@@ -137,7 +178,11 @@ export function Header() {
             placeholder="Search products"
             className="w-24 bg-transparent text-xs outline-none placeholder:text-muted-foreground xl:w-36"
           />
-          <button type="submit" aria-label="Search products" className="text-navy hover:text-orange">
+          <button
+            type="submit"
+            aria-label="Search products"
+            className="text-navy hover:text-orange"
+          >
             <Search className="h-4 w-4" />
           </button>
         </form>
@@ -197,7 +242,7 @@ export function Header() {
                   </button>
                   {mobileCategoriesOpen && (
                     <div className="grid grid-cols-2 gap-1 px-1 pb-2">
-                      {catalog.map((category) => (
+                      {categories.map((category) => (
                         <Link
                           key={category.slug}
                           to="/products"

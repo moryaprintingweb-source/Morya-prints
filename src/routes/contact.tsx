@@ -1,7 +1,10 @@
 import { useState } from "react";
 import { Phone, Mail, MapPin, MessageCircle, Send, CheckCircle2, ExternalLink } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
+import { api } from "../lib/api";
+import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 
 const services = [
   "Commercial Printing",
@@ -18,6 +21,15 @@ const services = [
 
 export function Contact() {
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const { getSetting } = usePublicSiteSettings();
+  const phoneDisplay = getSetting("business_phone_display");
+  const phoneLink = getSetting("business_phone_link");
+  const whatsappNumber = getSetting("business_whatsapp_number");
+  const email = getSetting("business_email");
+  const address = getSetting("business_address");
+  const mapsUrl = getSetting("business_maps_url");
+  const googleUrl = getSetting("business_google_url");
 
   return (
     <SiteLayout>
@@ -48,13 +60,31 @@ export function Contact() {
               onSubmit={(e) => {
                 e.preventDefault();
                 const form = new FormData(e.currentTarget);
+                const payload = {
+                  name: String(form.get("name") ?? ""),
+                  phone: String(form.get("phone") ?? ""),
+                  email: String(form.get("email") ?? ""),
+                  service: String(form.get("service") ?? ""),
+                  message: String(form.get("message") ?? ""),
+                };
                 const message = `Hello Morya Printing Point, I would like an enquiry.\n\nName: ${form.get("name")}\nPhone: ${form.get("phone")}\nEmail: ${form.get("email")}\nService: ${form.get("service")}\nRequirement: ${form.get("message")}`;
-                window.open(
-                  `https://wa.me/918554842103?text=${encodeURIComponent(message)}`,
-                  "_blank",
-                  "noopener,noreferrer",
-                );
-                setSent(true);
+                api("/api/inquiries", {
+                  method: "POST",
+                  body: JSON.stringify(payload),
+                })
+                  .catch((submitError) => {
+                    setError(
+                      submitError instanceof Error ? submitError.message : "Unable to save enquiry",
+                    );
+                  })
+                  .finally(() => {
+                    window.open(
+                      whatsappHref(whatsappNumber, encodeURIComponent(message)),
+                      "_blank",
+                      "noopener,noreferrer",
+                    );
+                    setSent(true);
+                  });
               }}
               className="space-y-4"
             >
@@ -99,42 +129,28 @@ export function Contact() {
               <button type="submit" className="btn-primary w-full">
                 Send Message <Send className="h-4 w-4" />
               </button>
+              {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
             </form>
           )}
         </div>
 
         <div className="space-y-4">
-          <InfoCard
-            icon={MapPin}
-            title="Visit us"
-            body="Shop No. 3, Jeet Building, near Jeet Ground, Lokmanya Colony, Kothrud, Pune 411038"
-            href="https://maps.app.goo.gl/TSBbNMXqBig85rtJ9"
-          />
-          <InfoCard
-            icon={Phone}
-            title="Call us"
-            body="+91 85548 42103 / 95521 26440"
-            href="tel:+918554842103"
-          />
+          <InfoCard icon={MapPin} title="Visit us" body={address} href={mapsUrl} />
+          <InfoCard icon={Phone} title="Call us" body={phoneDisplay} href={`tel:${phoneLink}`} />
           <InfoCard
             icon={MessageCircle}
             title="WhatsApp"
             body="Message us for a quick quote"
-            href="https://wa.me/918554842103"
+            href={whatsappHref(whatsappNumber)}
             accent
           />
           <InfoCard
             icon={ExternalLink}
             title="Google Business Profile"
             body="View profile, directions, reviews and business details"
-            href="https://share.google/3stt5fmHZPr0ByYUY"
+            href={googleUrl}
           />
-          <InfoCard
-            icon={Mail}
-            title="Email"
-            body="Moryaprintingweb@gmail.com"
-            href="mailto:Moryaprintingweb@gmail.com"
-          />
+          <InfoCard icon={Mail} title="Email" body={email} href={`mailto:${email}`} />
 
           <div className="rounded-2xl overflow-hidden border shadow-sm h-64">
             <iframe
@@ -187,7 +203,7 @@ function InfoCard({
   href,
   accent,
 }: {
-  icon: any;
+  icon: LucideIcon;
   title: string;
   body: string;
   href?: string;

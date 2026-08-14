@@ -91,8 +91,22 @@ export function Masonry({ items }: { items: MasonryItem[] }) {
         if (!hasMounted.current) {
           gsap.fromTo(
             element,
-            { opacity: 0, x: item.x, y: window.innerHeight + 100, width: item.width, height: item.height, filter: "blur(10px)" },
-            { ...target, opacity: 1, filter: "blur(0px)", duration: 0.7, delay: index * 0.06, ease: "power3.out" },
+            {
+              opacity: 0,
+              x: item.x,
+              y: window.innerHeight + 100,
+              width: item.width,
+              height: item.height,
+              filter: "blur(10px)",
+            },
+            {
+              ...target,
+              opacity: 1,
+              filter: "blur(0px)",
+              duration: 0.7,
+              delay: index * 0.06,
+              ease: "power3.out",
+            },
           );
         } else {
           gsap.to(element, { ...target, duration: 0.5, ease: "power3.out", overwrite: "auto" });
@@ -110,8 +124,12 @@ export function Masonry({ items }: { items: MasonryItem[] }) {
           key={item.id}
           data-gallery-key={item.id}
           className="masonry-item"
-          onMouseEnter={(event) => gsap.to(event.currentTarget, { scale: 0.97, duration: 0.25, ease: "power2.out" })}
-          onMouseLeave={(event) => gsap.to(event.currentTarget, { scale: 1, duration: 0.25, ease: "power2.out" })}
+          onMouseEnter={(event) =>
+            gsap.to(event.currentTarget, { scale: 0.97, duration: 0.25, ease: "power2.out" })
+          }
+          onMouseLeave={(event) =>
+            gsap.to(event.currentTarget, { scale: 1, duration: 0.25, ease: "power2.out" })
+          }
         >
           <img src={item.img} alt={item.label} loading="lazy" className="masonry-image" />
           <div className="masonry-caption">{item.label}</div>

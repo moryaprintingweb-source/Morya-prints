@@ -1,7 +1,11 @@
 import { Link } from "./Link";
 import { ArrowRight, Phone } from "lucide-react";
+import { usePublicSiteSettings } from "../../lib/site-settings";
 
 export function CTA() {
+  const { getSetting } = usePublicSiteSettings();
+  const phoneLink = getSetting("business_phone_link");
+
   return (
     <section className="container-x my-20">
       <div className="relative overflow-hidden rounded-2xl bg-navy px-6 py-12 md:px-14 md:py-16 text-white">
@@ -22,7 +26,7 @@ export function CTA() {
             <Link to="/contact" className="btn-primary">
               Get a Quote <ArrowRight className="h-4 w-4" />
             </Link>
-            <a href="tel:+918554842103" className="btn-outline">
+            <a href={`tel:${phoneLink}`} className="btn-outline">
               <Phone className="h-4 w-4" /> Call Us
             </a>
           </div>

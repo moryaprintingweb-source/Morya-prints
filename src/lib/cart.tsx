@@ -108,7 +108,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = useCallback((id: string, quantity: number) => {
     setItems((current) =>
       current
-        .map((entry) => (entry.id === id ? { ...entry, quantity: Math.max(1, quantity) } : entry))
+        .map((entry) => (entry.id === id ? { ...entry, quantity } : entry))
         .filter((entry) => entry.quantity > 0),
     );
   }, []);

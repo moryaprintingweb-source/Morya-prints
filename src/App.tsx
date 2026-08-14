@@ -1,5 +1,6 @@
 import { About } from "./routes/about";
-import { Blog } from "./routes/blog";
+import { Admin } from "./routes/admin";
+import { Blog, BlogDetail } from "./routes/blog";
 import { Cart } from "./routes/cart";
 import { Contact } from "./routes/contact";
 import { FAQ } from "./routes/faq";
@@ -36,9 +37,14 @@ function NotFound() {
 export function App() {
   const { pathname } = window.location;
   const productMatch = pathname.match(/^\/products\/([^/]+)\/?$/);
+  const blogMatch = pathname.match(/^\/blog\/([^/]+)\/?$/);
 
   if (productMatch?.[1]) {
     return <ProductDetail slug={decodeURIComponent(productMatch[1])} />;
+  }
+
+  if (blogMatch?.[1]) {
+    return <BlogDetail slug={decodeURIComponent(blogMatch[1])} />;
   }
 
   switch (pathname.replace(/\/$/, "") || "/") {
@@ -46,6 +52,8 @@ export function App() {
       return <Home />;
     case "/about":
       return <About />;
+    case "/admin":
+      return <Admin />;
     case "/blog":
       return <Blog />;
     case "/cart":

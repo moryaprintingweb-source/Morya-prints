@@ -1,15 +1,36 @@
 import {
-  Factory, ShoppingBag, Building2, HeartPulse, GraduationCap, Home, HardHat, Car, Ticket, Store,
+  Factory,
+  ShoppingBag,
+  Building2,
+  HeartPulse,
+  GraduationCap,
+  Home,
+  HardHat,
+  Car,
+  Ticket,
+  Store,
 } from "lucide-react";
 import { SiteLayout } from "../components/site/SiteLayout";
 import { PageHero } from "../components/site/PageHero";
 import { CTA } from "../components/site/CTA";
 
 const list = [
-  { icon: Factory, title: "Manufacturing", desc: "Industrial labels, safety signage, factory branding." },
+  {
+    icon: Factory,
+    title: "Manufacturing",
+    desc: "Industrial labels, safety signage, factory branding.",
+  },
   { icon: ShoppingBag, title: "Retail", desc: "Store branding, POP displays, promotional print." },
-  { icon: Building2, title: "Corporate Offices", desc: "Stationery, office signage, brand rollouts." },
-  { icon: HeartPulse, title: "Healthcare", desc: "Directional signage, patient forms, wayfinding." },
+  {
+    icon: Building2,
+    title: "Corporate Offices",
+    desc: "Stationery, office signage, brand rollouts.",
+  },
+  {
+    icon: HeartPulse,
+    title: "Healthcare",
+    desc: "Directional signage, patient forms, wayfinding.",
+  },
   { icon: GraduationCap, title: "Education", desc: "Prospectus, ID cards, campus signage." },
   { icon: Home, title: "Real Estate", desc: "Site boards, brochures, marketing collateral." },
   { icon: HardHat, title: "Construction", desc: "Site branding, safety signage, hoardings." },
@@ -21,7 +42,12 @@ const list = [
 export function Industries() {
   return (
     <SiteLayout>
-      <PageHero eyebrow="Industries" title="Industries We Serve" subtitle="From large-scale manufacturers to neighbourhood businesses — we tailor solutions for every sector." crumb="Industries" />
+      <PageHero
+        eyebrow="Industries"
+        title="Industries We Serve"
+        subtitle="From large-scale manufacturers to neighbourhood businesses — we tailor solutions for every sector."
+        crumb="Industries"
+      />
 
       <section className="container-x py-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         {list.map((i) => (
