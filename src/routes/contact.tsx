@@ -22,6 +22,7 @@ const services = [
 export function Contact() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
   const { getSetting } = usePublicSiteSettings();
   const phoneDisplay = getSetting("business_phone_display");
   const phoneLink = getSetting("business_phone_link");
@@ -36,7 +37,7 @@ export function Contact() {
       <PageHero
         eyebrow="Contact Us"
         title="Let's talk about your project."
-        subtitle="Share your requirement — we'll respond with a quote within a few hours."
+        subtitle="Share your requirement - we'll respond with a quote within a few hours."
         crumb="Contact"
       />
 
@@ -48,7 +49,7 @@ export function Contact() {
                 <CheckCircle2 className="h-8 w-8" />
               </div>
               <h3 className="mt-4 font-display text-2xl font-bold text-navy">
-                Thanks — message received!
+                Thanks - message received!
               </h3>
               <p className="mt-2 text-muted-foreground">Our team will reach out to you shortly.</p>
               <button className="btn-primary mt-6" onClick={() => setSent(false)}>
@@ -57,8 +58,10 @@ export function Contact() {
             </div>
           ) : (
             <form
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
+                setError("");
+                setSubmitting(true);
                 const form = new FormData(e.currentTarget);
                 const payload = {
                   name: String(form.get("name") ?? ""),
@@ -68,23 +71,26 @@ export function Contact() {
                   message: String(form.get("message") ?? ""),
                 };
                 const message = `Hello Morya Printing Point, I would like an enquiry.\n\nName: ${form.get("name")}\nPhone: ${form.get("phone")}\nEmail: ${form.get("email")}\nService: ${form.get("service")}\nRequirement: ${form.get("message")}`;
-                api("/api/inquiries", {
-                  method: "POST",
-                  body: JSON.stringify(payload),
-                })
-                  .catch((submitError) => {
-                    setError(
-                      submitError instanceof Error ? submitError.message : "Unable to save enquiry",
-                    );
-                  })
-                  .finally(() => {
-                    window.open(
-                      whatsappHref(whatsappNumber, encodeURIComponent(message)),
-                      "_blank",
-                      "noopener,noreferrer",
-                    );
-                    setSent(true);
+                try {
+                  await api("/api/inquiries", {
+                    method: "POST",
+                    body: JSON.stringify(payload),
                   });
+                  window.open(
+                    whatsappHref(whatsappNumber, message),
+                    "_blank",
+                    "noopener,noreferrer",
+                  );
+                  setSent(true);
+                } catch (submitError) {
+                  setError(
+                    submitError instanceof Error
+                      ? submitError.message
+                      : "Unable to save enquiry. Please call or WhatsApp us directly.",
+                  );
+                } finally {
+                  setSubmitting(false);
+                }
               }}
               className="space-y-4"
             >
@@ -126,8 +132,12 @@ export function Contact() {
                   className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan"
                 />
               </div>
-              <button type="submit" className="btn-primary w-full">
-                Send Message <Send className="h-4 w-4" />
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn-primary w-full disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {submitting ? "Sending..." : "Send Message"} <Send className="h-4 w-4" />
               </button>
               {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
             </form>

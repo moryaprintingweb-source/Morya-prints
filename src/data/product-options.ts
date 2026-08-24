@@ -141,7 +141,7 @@ const standardCardOptions: ProductOption[] = [
 const flyerOptions: ProductOption[] = [
   select("size", "Size", paperSizes),
   printSides,
-  select("quantity", "Quantity", ["500", "1,000", "2,000", "3,000", "5,000", "10,000"]),
+  select("quantity", "Quantity", ["100", "200", "500", "1,000", "2,000", "5,000", "10,000"]),
 ];
 
 const billBookOptions: ProductOption[] = [
@@ -164,6 +164,16 @@ const prescriptionPadOptions: ProductOption[] = [
   select("size", "Size", paperSizes),
   printSides,
   select("quantity", "Books", ["1 Book", "2 Books", "5 Books", "10 Books"]),
+];
+
+const letterheadOptions: ProductOption[] = [
+  printSides,
+  select("quantity", "Quantity", standardQuantities),
+];
+
+const envelopeOptions: ProductOption[] = [
+  printSides,
+  select("quantity", "Quantity", standardQuantities),
 ];
 
 const stickerOptions: ProductOption[] = [
@@ -238,6 +248,8 @@ export function getProductOptions(product: CatalogProduct): ProductOption[] {
     if (name.includes("prescription")) return prescriptionPadOptions;
     return simpleQuantity();
   }
+  if (category === "letter-head") return letterheadOptions;
+  if (category === "envelope") return envelopeOptions;
   if (category === "stickers-labels") return stickerOptions;
   if (category === "flex-printing") return largeFormatOptions(false);
   if (category === "vinyl-printing") return largeFormatOptions(true);

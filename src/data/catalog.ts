@@ -62,21 +62,21 @@ export const catalog: Category[] = [
     products: [
       {
         name: "Standard Visiting Cards",
-        startingAt: 199,
+        startingAt: 300,
         image: driveImage("1NR71Gud5NV3kJCAihnsYE2oftW7PkCyu"),
-        quantity: "500",
-        singleSidePrice: "199 / 299 / 499 / 999",
-        bothSidePrice: "299 / 399 / 799 / 1299",
+        quantity: "100 / 200 / 500 / 1000",
+        singleSidePrice: "300 / 500 / 1200 / 1800",
+        bothSidePrice: "450 / 750 / 1800 / 2700",
         description:
           "Standard visiting cards from the Excel sheet with printing type and quantity options.",
       },
       {
         name: "Premium Visiting Cards",
-        startingAt: 799,
+        startingAt: 600,
         image: driveImage("1RXt2Rq_RU14o09s3h0VNyX6MtWgjWHD7"),
-        quantity: "500",
-        singleSidePrice: "799 / 1299 / 1899 / 2399",
-        bothSidePrice: "999 / 1499 / 2099 / 2499",
+        quantity: "100 / 200 / 500 / 1000",
+        singleSidePrice: "600 / 900 / 1800 / 2200",
+        bothSidePrice: "900 / 1350 / 2700 / 3300",
         description:
           "Premium visiting cards from the Excel sheet with printing type, quantity and corner type options.",
       },
@@ -90,11 +90,11 @@ export const catalog: Category[] = [
     products: [
       {
         name: "90 GSM Flyers (Glossy)",
-        startingAt: 1299,
+        startingAt: 600,
         image: a5Flyers,
-        quantity: "5000",
-        singleSidePrice: "1299 / 1699",
-        bothSidePrice: "1699 / 1999",
+        quantity: "100 / 200 / 500 / 1000 / 2000 / 5000 / 10000",
+        singleSidePrice: "600 / 900 / 1200 / 1500 / 1800 / 4500 / 7200",
+        bothSidePrice: "900 / 1350 / 1800 / 2250 / 2700 / 6750 / 10800",
         description:
           "90 GSM glossy flyers from the Excel sheet with size, printing type and quantity options.",
       },
@@ -108,18 +108,21 @@ export const catalog: Category[] = [
     products: [
       {
         name: "Bill Book B/W",
-        startingAt: 1500,
+        startingAt: 600,
         image: receiptBooks,
-        quantity: "5 Book",
-        singleSidePrice: "1500 / 1800",
+        quantity: "1 / 2 / 5 / 10 Books",
+        singleSidePrice: "600 / 900 / 1200 / 1800",
+        bothSidePrice: "900 / 1350 / 1800 / 2700",
         description:
           "Black-and-white bill book from the Excel sheet with size, printing type, copy and numbering options.",
       },
       {
         name: "Prescription Pads",
-        startingAt: 1799,
+        startingAt: 600,
         image: visuals[1],
-        quantity: "1 Book",
+        quantity: "1 / 2 / 5 / 10 Books",
+        singleSidePrice: "600 / 900 / 1200 / 1800",
+        bothSidePrice: "900 / 1350 / 1800 / 2700",
         description:
           "Prescription pad from the Excel sheet with size, printing type and book quantity options.",
       },
@@ -133,10 +136,11 @@ export const catalog: Category[] = [
     products: [
       {
         name: "Letterheads",
-        startingAt: 2499,
+        startingAt: 500,
         image: letterheads,
-        quantity: "3000",
-        singleSidePrice: "2499",
+        quantity: "100 / 200 / 500 / 1000",
+        singleSidePrice: "500 / 800 / 1500 / 2000",
+        bothSidePrice: "750 / 1200 / 2250 / 3000",
         description: "Letterhead printing from the Excel sheet with quantity option.",
       },
     ],
@@ -149,10 +153,11 @@ export const catalog: Category[] = [
     products: [
       {
         name: "Envelopes",
-        startingAt: 2699,
+        startingAt: 700,
         image: envelopes,
-        quantity: "200",
-        singleSidePrice: "2699",
+        quantity: "100 / 200 / 500 / 1000",
+        singleSidePrice: "700 / 1200 / 1800 / 2400",
+        bothSidePrice: "1050 / 1800 / 2700 / 3600",
         description: "Envelope printing from the Excel sheet with quantity option.",
       },
     ],

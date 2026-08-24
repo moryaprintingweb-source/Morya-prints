@@ -44,5 +44,5 @@ export function usePublicSiteSettings() {
 
 export function whatsappHref(number: string, message?: string) {
   const cleanNumber = number.replace(/\D/g, "");
-  return `https://wa.me/${cleanNumber}${message ? `?text=${message}` : ""}`;
+  return `https://wa.me/${cleanNumber}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
 }

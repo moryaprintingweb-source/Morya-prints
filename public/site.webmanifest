@@ -1,0 +1,16 @@
+{
+  "name": "Morya Printing Point",
+  "short_name": "Morya Prints",
+  "description": "Custom digital printing, flex printing, stickers, signage and branding in Kothrud, Pune.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fffff5",
+  "theme_color": "#1e3a8a",
+  "icons": [
+    {
+      "src": "/morya-icon-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -6,6 +6,7 @@ const {
   DB_USER = "root",
   DB_PASSWORD = "",
   DB_NAME = "morya_prints",
+  DB_BOOTSTRAP_MODE = "full",
 } = process.env;
 
 export const pool = mysql.createPool({
@@ -25,15 +26,17 @@ export async function query(sql, params = {}) {
 }
 
 export async function ensureDatabase() {
-  const bootstrap = await mysql.createConnection({
-    host: DB_HOST,
-    port: Number(DB_PORT),
-    user: DB_USER,
-    password: DB_PASSWORD,
-  });
+  if (DB_BOOTSTRAP_MODE === "full") {
+    const bootstrap = await mysql.createConnection({
+      host: DB_HOST,
+      port: Number(DB_PORT),
+      user: DB_USER,
+      password: DB_PASSWORD,
+    });
 
-  await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
-  await bootstrap.end();
+    await bootstrap.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\``);
+    await bootstrap.end();
+  }
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS categories (
@@ -153,6 +156,7 @@ export async function ensureDatabase() {
       title VARCHAR(220) NOT NULL,
       slug VARCHAR(220) NOT NULL UNIQUE,
       excerpt TEXT NOT NULL,
+      content TEXT NULL,
       image_url TEXT NOT NULL,
       tag VARCHAR(120) NULL,
       published_at VARCHAR(80) NULL,
@@ -161,6 +165,8 @@ export async function ensureDatabase() {
       updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
     )
   `);
+
+  await ensureColumn("blog_posts", "content", "TEXT NULL");
 }
 
 async function ensureColumn(table, column, definition) {

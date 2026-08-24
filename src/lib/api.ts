@@ -49,6 +49,7 @@ export type ApiBlogPost = {
   title: string;
   slug: string;
   excerpt: string;
+  content?: string;
   image_url: string;
   tag?: string;
   published_at?: string;

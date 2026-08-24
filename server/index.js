@@ -2,18 +2,52 @@ import "dotenv/config";
 import bcrypt from "bcryptjs";
 import cors from "cors";
 import express from "express";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import jwt from "jsonwebtoken";
 import { ensureDatabase, pool, query } from "./db.js";
 import { seedIfEmpty } from "./seed.js";
 
 const app = express();
-const PORT = Number(process.env.API_PORT ?? 4000);
-const JWT_SECRET = process.env.JWT_SECRET ?? "replace-this-secret";
+const PORT = Number(process.env.PORT ?? process.env.API_PORT ?? 4000);
+const isProduction = process.env.NODE_ENV === "production";
+const JWT_SECRET = process.env.JWT_SECRET ?? (isProduction ? "" : "dev-only-secret");
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL ?? "admin@moryaprints.local";
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? "change-me-now";
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD ?? (isProduction ? "" : "change-me-now");
 const ADMIN_PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH;
+const clientOrigins =
+  process.env.CLIENT_ORIGIN?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? [];
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "..");
+const uploadDir = path.join(projectRoot, "public", "uploads");
+const uploadsPublicBaseUrl = (process.env.UPLOADS_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
 let databaseReady = false;
 let databaseError = "";
+
+function validateProductionConfig() {
+  if (!isProduction) return;
+
+  const missing = [];
+  if (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32) {
+    missing.push("JWT_SECRET with at least 32 characters");
+  }
+  if (
+    !ADMIN_PASSWORD_HASH &&
+    (!process.env.ADMIN_PASSWORD || process.env.ADMIN_PASSWORD.length < 12)
+  ) {
+    missing.push("ADMIN_PASSWORD_HASH or ADMIN_PASSWORD with at least 12 characters");
+  }
+  if (clientOrigins.length === 0) {
+    missing.push("CLIENT_ORIGIN");
+  }
+
+  if (missing.length) {
+    throw new Error(`Missing secure production configuration: ${missing.join(", ")}`);
+  }
+}
 
 async function initializeDatabase() {
   try {
@@ -29,11 +63,19 @@ async function initializeDatabase() {
   }
 }
 
-app.use(cors({ origin: process.env.CLIENT_ORIGIN?.split(",") ?? true }));
-app.use(express.json({ limit: "1mb" }));
+validateProductionConfig();
+
+app.use(cors({ origin: clientOrigins.length ? clientOrigins : !isProduction }));
+app.use(express.json({ limit: "12mb" }));
+app.use("/uploads", express.static(uploadDir));
 
 function toBool(value) {
   return value === true || value === 1 || value === "1";
+}
+
+function getUploadUrl(savedName) {
+  const uploadPath = `/uploads/${savedName}`;
+  return uploadsPublicBaseUrl ? `${uploadsPublicBaseUrl}${uploadPath}` : uploadPath;
 }
 
 function requireAdmin(req, res, next) {
@@ -171,6 +213,64 @@ app.get("/api/blog-posts", requireDatabase, async (_req, res, next) => {
       "SELECT * FROM blog_posts WHERE is_active = 1 ORDER BY created_at DESC, id DESC",
     );
     res.json({ posts });
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.post("/api/uploads", async (req, res, next) => {
+  try {
+    const { fileName = "artwork", mimeType = "", dataUrl = "" } = req.body;
+    const allowedTypes = new Set([
+      "application/pdf",
+      "application/postscript",
+      "image/jpeg",
+      "image/png",
+      "image/vnd.adobe.photoshop",
+      "application/octet-stream",
+    ]);
+    const extension = path.extname(fileName).toLowerCase();
+    const allowedExtensions = new Set([
+      ".pdf",
+      ".ai",
+      ".cdr",
+      ".psd",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".webp",
+    ]);
+    if (!allowedExtensions.has(extension)) {
+      res.status(400).json({ message: "Unsupported artwork file type" });
+      return;
+    }
+    if (mimeType && !allowedTypes.has(mimeType) && !mimeType.startsWith("image/")) {
+      res.status(400).json({ message: "Unsupported artwork MIME type" });
+      return;
+    }
+
+    const match = String(dataUrl).match(/^data:[^;]+;base64,(.+)$/);
+    if (!match) {
+      res.status(400).json({ message: "Artwork upload data is invalid" });
+      return;
+    }
+
+    const buffer = Buffer.from(match[1], "base64");
+    if (!buffer.length || buffer.length > 10 * 1024 * 1024) {
+      res.status(400).json({ message: "Artwork must be 10 MB or smaller" });
+      return;
+    }
+
+    await mkdir(uploadDir, { recursive: true });
+    const safeBase = path
+      .basename(fileName, extension)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80);
+    const savedName = `${Date.now()}-${safeBase || "artwork"}${extension}`;
+    await writeFile(path.join(uploadDir, savedName), buffer);
+    res.status(201).json({ url: getUploadUrl(savedName) });
   } catch (error) {
     next(error);
   }
@@ -573,15 +673,16 @@ app.post("/api/admin/blog-posts", async (req, res, next) => {
       title,
       slug,
       excerpt,
+      content = "",
       imageUrl,
       tag = "",
       publishedAt = "",
       isActive = true,
     } = req.body;
     const [result] = await pool.execute(
-      `INSERT INTO blog_posts (title, slug, excerpt, image_url, tag, published_at, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [title, slug, excerpt, imageUrl, tag, publishedAt, isActive ? 1 : 0],
+      `INSERT INTO blog_posts (title, slug, excerpt, content, image_url, tag, published_at, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [title, slug, excerpt, content, imageUrl, tag, publishedAt, isActive ? 1 : 0],
     );
     res.status(201).json({ id: result.insertId });
   } catch (error) {
@@ -595,6 +696,7 @@ app.put("/api/admin/blog-posts/:id", async (req, res, next) => {
       title,
       slug,
       excerpt,
+      content = "",
       imageUrl,
       tag = "",
       publishedAt = "",
@@ -602,9 +704,9 @@ app.put("/api/admin/blog-posts/:id", async (req, res, next) => {
     } = req.body;
     await pool.execute(
       `UPDATE blog_posts
-       SET title = ?, slug = ?, excerpt = ?, image_url = ?, tag = ?, published_at = ?, is_active = ?
+       SET title = ?, slug = ?, excerpt = ?, content = ?, image_url = ?, tag = ?, published_at = ?, is_active = ?
        WHERE id = ?`,
-      [title, slug, excerpt, imageUrl, tag, publishedAt, isActive ? 1 : 0, req.params.id],
+      [title, slug, excerpt, content, imageUrl, tag, publishedAt, isActive ? 1 : 0, req.params.id],
     );
     res.json({ ok: true });
   } catch (error) {
@@ -681,6 +783,6 @@ app.use((error, _req, res, _next) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Morya Prints API running on http://localhost:${PORT}`);
+  console.log(`Morya Prints API running on port ${PORT}`);
   void initializeDatabase();
 });

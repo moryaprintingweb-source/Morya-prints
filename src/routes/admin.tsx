@@ -15,6 +15,7 @@ import {
   Search,
   ShoppingBag,
   Trash2,
+  Upload,
   Users,
 } from "lucide-react";
 import { allProducts as frontendProducts, catalog as frontendCatalog } from "../data/catalog";
@@ -110,6 +111,7 @@ type BlogForm = {
   title: string;
   slug: string;
   excerpt: string;
+  content: string;
   imageUrl: string;
   tag: string;
   publishedAt: string;
@@ -135,6 +137,7 @@ type Section =
   | "blogs"
   | "orders";
 type ProductView = "list" | "add";
+type UploadHandler = (file: File) => Promise<string>;
 
 const emptyProduct: ProductForm = {
   categoryId: "",
@@ -175,6 +178,7 @@ const emptyBlogPost: BlogForm = {
   title: "",
   slug: "",
   excerpt: "",
+  content: "",
   imageUrl: "",
   tag: "",
   publishedAt: "",
@@ -770,6 +774,7 @@ export function Admin() {
       title: post.title,
       slug: post.slug,
       excerpt: post.excerpt,
+      content: post.content ?? "",
       imageUrl: post.image_url,
       tag: post.tag ?? "",
       publishedAt: post.published_at ?? "",
@@ -839,6 +844,19 @@ export function Admin() {
     } catch (settingError) {
       setError(settingError instanceof Error ? settingError.message : "Unable to save settings");
     }
+  }
+
+  async function uploadAdminImage(file: File) {
+    const dataUrl = await readFileAsDataUrl(file);
+    const result = await api<{ url: string }>("/api/uploads", {
+      method: "POST",
+      body: JSON.stringify({
+        fileName: file.name,
+        mimeType: file.type,
+        dataUrl,
+      }),
+    });
+    return result.url;
   }
 
   if (!token) {
@@ -1021,6 +1039,7 @@ export function Admin() {
                   onSubmit={saveProduct}
                   onNew={() => setForm({ ...emptyProduct, categoryId: form.categoryId })}
                   onChange={setFormField}
+                  onUpload={uploadAdminImage}
                 />
               )}
               {productView === "list" && (
@@ -1063,6 +1082,7 @@ export function Admin() {
               disabled={usingFallbackCatalog}
               onChange={updateSetting}
               onSubmit={saveSiteSettings}
+              onUpload={uploadAdminImage}
             />
           )}
 
@@ -1081,6 +1101,7 @@ export function Admin() {
               disabled={usingFallbackCatalog}
               onChange={updateSetting}
               onSubmit={saveSiteSettings}
+              onUpload={uploadAdminImage}
             />
           )}
 
@@ -1122,6 +1143,7 @@ export function Admin() {
                 onSubmit={saveGalleryItem}
                 onNew={() => setGalleryForm(emptyGalleryItem)}
                 onChange={setGalleryField}
+                onUpload={uploadAdminImage}
               />
               <GalleryGrid
                 items={galleryItems}
@@ -1140,6 +1162,7 @@ export function Admin() {
                 onSubmit={saveBlogPost}
                 onNew={() => setBlogForm(emptyBlogPost)}
                 onChange={setBlogField}
+                onUpload={uploadAdminImage}
               />
               <BlogList
                 posts={blogPosts}
@@ -1413,6 +1436,7 @@ function ProductEditor({
   onSubmit,
   onNew,
   onChange,
+  onUpload,
 }: {
   form: ProductForm;
   categories: ApiCategory[];
@@ -1422,6 +1446,7 @@ function ProductEditor({
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onNew: () => void;
   onChange: <Key extends keyof ProductForm>(key: Key, value: ProductForm[Key]) => void;
+  onUpload: UploadHandler;
 }) {
   return (
     <form onSubmit={onSubmit} className="h-fit rounded-xl border bg-white p-5">
@@ -1477,6 +1502,13 @@ function ProductEditor({
         <Field
           label="Image Link"
           value={form.imageUrl}
+          onChange={(value) => onChange("imageUrl", value)}
+        />
+        <ImageUploadField
+          disabled={disabled}
+          label="Upload Product Image"
+          value={form.imageUrl}
+          onUpload={onUpload}
           onChange={(value) => onChange("imageUrl", value)}
         />
         <Field
@@ -1756,6 +1788,7 @@ function SettingsPanel({
   disabled,
   onChange,
   onSubmit,
+  onUpload,
 }: {
   title: string;
   description: string;
@@ -1763,6 +1796,7 @@ function SettingsPanel({
   disabled: boolean;
   onChange: (key: string, value: string) => void;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+  onUpload?: UploadHandler;
 }) {
   return (
     <form onSubmit={onSubmit} className="mt-6 rounded-xl border bg-white p-5">
@@ -1799,6 +1833,15 @@ function SettingsPanel({
                 </div>
               </div>
             )}
+            {isImageSetting(setting.setting_key) && onUpload && (
+              <ImageUploadField
+                disabled={disabled}
+                label="Upload Image"
+                value={setting.setting_value}
+                onUpload={onUpload}
+                onChange={(value) => onChange(setting.setting_key, value)}
+              />
+            )}
           </div>
         ))}
       </div>
@@ -1818,12 +1861,14 @@ function GalleryEditor({
   onSubmit,
   onNew,
   onChange,
+  onUpload,
 }: {
   form: GalleryForm;
   disabled: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onNew: () => void;
   onChange: <Key extends keyof GalleryForm>(key: Key, value: GalleryForm[Key]) => void;
+  onUpload: UploadHandler;
 }) {
   return (
     <form onSubmit={onSubmit} className="h-fit rounded-xl border bg-white p-5">
@@ -1841,6 +1886,13 @@ function GalleryEditor({
       <Field
         label="Image Link"
         value={form.imageUrl}
+        onChange={(value) => onChange("imageUrl", value)}
+      />
+      <ImageUploadField
+        disabled={disabled}
+        label="Upload Gallery Image"
+        value={form.imageUrl}
+        onUpload={onUpload}
         onChange={(value) => onChange("imageUrl", value)}
       />
       <div className="grid gap-3 sm:grid-cols-2">
@@ -1934,12 +1986,14 @@ function BlogEditor({
   onSubmit,
   onNew,
   onChange,
+  onUpload,
 }: {
   form: BlogForm;
   disabled: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onNew: () => void;
   onChange: <Key extends keyof BlogForm>(key: Key, value: BlogForm[Key]) => void;
+  onUpload: UploadHandler;
 }) {
   return (
     <form onSubmit={onSubmit} className="h-fit rounded-xl border bg-white p-5">
@@ -1964,6 +2018,13 @@ function BlogEditor({
         value={form.imageUrl}
         onChange={(value) => onChange("imageUrl", value)}
       />
+      <ImageUploadField
+        disabled={disabled}
+        label="Upload Blog Image"
+        value={form.imageUrl}
+        onUpload={onUpload}
+        onChange={(value) => onChange("imageUrl", value)}
+      />
       <div className="grid gap-3 sm:grid-cols-2">
         <Field
           label="Tag"
@@ -1985,6 +2046,16 @@ function BlogEditor({
           onChange={(event) => onChange("excerpt", event.target.value)}
           rows={4}
           required
+          className="mt-2 w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#6d50d9]"
+        />
+      </label>
+      <label className="mt-4 block text-sm font-bold text-navy">
+        Article Content
+        <textarea
+          value={form.content}
+          onChange={(event) => onChange("content", event.target.value)}
+          rows={10}
+          placeholder="Write the full article. Use blank lines between paragraphs."
           className="mt-2 w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#6d50d9]"
         />
       </label>
@@ -2061,6 +2132,73 @@ function BlogList({
       </div>
     </section>
   );
+}
+
+function ImageUploadField({
+  label,
+  value,
+  disabled,
+  onUpload,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  disabled: boolean;
+  onUpload: UploadHandler;
+  onChange: (value: string) => void;
+}) {
+  const [status, setStatus] = useState("");
+
+  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setStatus("Uploading image...");
+    try {
+      const url = await onUpload(file);
+      onChange(url);
+      setStatus("Image uploaded. Save changes to publish it.");
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : "Unable to upload image");
+    } finally {
+      event.target.value = "";
+    }
+  }
+
+  return (
+    <div className="mt-3 rounded-xl border border-dashed bg-[#fffef5] p-3">
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg bg-slate-900 px-3 py-2 text-xs font-bold text-white transition hover:bg-[#6d50d9]">
+        <Upload className="h-3.5 w-3.5" />
+        {label}
+        <input
+          type="file"
+          accept=".jpg,.jpeg,.png,.webp"
+          disabled={disabled}
+          className="sr-only"
+          onChange={(event) => void handleFileChange(event)}
+        />
+      </label>
+      {value && (
+        <a
+          href={value}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-3 align-middle text-xs font-semibold text-[#6d50d9] underline"
+        >
+          Preview current image
+        </a>
+      )}
+      {status && <p className="mt-2 text-xs font-semibold text-muted-foreground">{status}</p>}
+    </div>
+  );
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 function OrdersTable({

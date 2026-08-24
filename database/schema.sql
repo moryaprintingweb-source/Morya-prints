@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
   title VARCHAR(220) NOT NULL,
   slug VARCHAR(220) NOT NULL UNIQUE,
   excerpt TEXT NOT NULL,
+  content TEXT NULL,
   image_url TEXT NOT NULL,
   tag VARCHAR(120) NULL,
   published_at VARCHAR(80) NULL,

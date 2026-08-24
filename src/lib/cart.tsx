@@ -19,6 +19,7 @@ export type CartItem = {
   quantity: number;
   selectedOptions: SelectedProductOption[];
   artworkName?: string;
+  artworkUrl?: string;
 };
 
 type CartItemInput = Omit<CartItem, "id" | "quantity" | "selectedOptions"> & {
@@ -42,7 +43,7 @@ const getCartItemId = (item: CartItemInput) => {
   const configuration = (item.selectedOptions ?? [])
     .map((option) => `${option.id}=${option.value}`)
     .join("&");
-  return [item.slug, configuration, item.artworkName ?? ""].join("::");
+  return [item.slug, configuration, item.artworkName ?? "", item.artworkUrl ?? ""].join("::");
 };
 
 export function CartProvider({ children }: { children: ReactNode }) {

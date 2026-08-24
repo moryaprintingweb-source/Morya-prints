@@ -13,14 +13,14 @@ import {
 import { usePublicSiteSettings, whatsappHref } from "../../lib/site-settings";
 
 const shopLinks = [
-  "Visiting Cards",
-  "Stickers & Labels",
-  "Flex & Banners",
-  "Signage Boards",
-  "Packaging",
-  "Office Printing",
-  "Photo Prints",
-  "Corporate Gifts",
+  ["visiting-cards", "Visiting Cards"],
+  ["stickers-labels", "Stickers & Labels"],
+  ["flex-printing", "Flex & Banners"],
+  ["sunboard", "Signage Boards"],
+  ["envelope", "Packaging"],
+  ["letter-head", "Office Printing"],
+  ["flyers-pamphlets", "Flyers & Pamphlets"],
+  ["brochure-book", "Brochures"],
 ];
 
 export function Footer() {
@@ -35,8 +35,8 @@ export function Footer() {
 
   return (
     <footer className="mt-20 bg-navy text-white/80">
-      <div className="container-x grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
-        <div>
+      <div className="container-x grid gap-8 py-14 md:grid-cols-2 lg:grid-cols-[1.25fr_0.85fr_1fr_1fr_1.35fr] xl:gap-10">
+        <div className="lg:max-w-sm">
           <div className="flex items-center gap-3">
             <img src="/morya-footer-logo.png" alt="Morya Printing Point" className="h-20 w-20" />
             <div>
@@ -97,10 +97,14 @@ export function Footer() {
         <div>
           <h4 className="mb-4 font-semibold text-white">Popular categories</h4>
           <ul className="space-y-2 text-sm">
-            {shopLinks.map((item) => (
-              <li key={item}>
-                <Link to="/products" className="transition hover:text-orange">
-                  {item}
+            {shopLinks.map(([slug, label]) => (
+              <li key={slug}>
+                <Link
+                  to="/products"
+                  search={{ category: slug }}
+                  className="transition hover:text-orange"
+                >
+                  {label}
                 </Link>
               </li>
             ))}
@@ -108,10 +112,11 @@ export function Footer() {
         </div>
         <div>
           <h4 className="mb-4 font-semibold text-white">Support & policies</h4>
-          <ul className="mb-6 space-y-2 text-sm">
+          <ul className="space-y-2 text-sm">
             {[
               ["/support", "Support"],
               ["/faq", "FAQ"],
+              ["/shipping-payment-policy", "Shipping & Payment Policy"],
               ["/privacy-policy", "Privacy Policy"],
               ["/terms-conditions", "Terms & Conditions"],
               ["/return-refund-policy", "Return & Refund Policy"],
@@ -123,6 +128,8 @@ export function Footer() {
               </li>
             ))}
           </ul>
+        </div>
+        <div>
           <h4 className="mb-4 font-semibold text-white">Get in touch</h4>
           <ul className="space-y-3 text-sm">
             <li>

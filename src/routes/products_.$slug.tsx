@@ -22,6 +22,7 @@ import {
 } from "../data/product-options";
 import { useCart } from "../lib/cart";
 import { api, type ApiProduct } from "../lib/api";
+import { calculateProductPrice, formatPrice, getProductPriceTiers } from "../lib/pricing";
 import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 import heroImg from "../assets/hero.jpg";
 
@@ -35,6 +36,11 @@ type ProductOffer = {
 };
 
 type ProductLike = (typeof allProducts)[number] & ProductOffer;
+type UploadedArtwork = {
+  name: string;
+  url?: string;
+  status: "uploading" | "uploaded" | "local-only" | "failed";
+};
 
 function normalizeApiProduct(product: ApiProduct): ProductLike {
   return {
@@ -90,6 +96,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
     getDefaultSelections(optionDefinitions),
   );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedArtwork, setUploadedArtwork] = useState<UploadedArtwork | null>(null);
   const uploadInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -103,6 +110,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
   useEffect(() => {
     setSelections(getDefaultSelections(optionDefinitions));
     setUploadedFile(null);
+    setUploadedArtwork(null);
     setSelectedImage(product?.image ?? "");
   }, [optionDefinitions, product?.image]);
 
@@ -154,6 +162,8 @@ export function ProductDetail({ slug }: { slug?: string }) {
     product.offerPercent ||
     (mrp ? Math.max(1, Math.round(((mrp - product.startingAt) / mrp) * 100)) : 0);
   const selectedOptions = getVisibleSelections(optionDefinitions, selections);
+  const selectedPrice = calculateProductPrice(product, selections);
+  const productPriceTiers = getProductPriceTiers(product);
   const hasMissingRequiredOption = optionDefinitions.some((option) => {
     const isVisible =
       !option.showWhen || selections[option.showWhen.optionId] === option.showWhen.value;
@@ -162,9 +172,11 @@ export function ProductDetail({ slug }: { slug?: string }) {
   const optionMessage = selectedOptions
     .map((option) => `${option.label}: ${option.value}`)
     .join("\n");
-  const buyMessage = encodeURIComponent(
-    `Hello Morya Printing Point, I want to order ${product.name}.\n${optionMessage}${uploadedFile ? `\nArtwork selected: ${uploadedFile.name}` : ""}\nPlease confirm the final price and delivery timeline.`,
-  );
+  const buyMessage = `Hello Morya Printing Point, I want to order ${product.name}.\n${optionMessage}\nEstimated website price: ${selectedPrice.label}${
+    uploadedArtwork
+      ? `\nArtwork: ${uploadedArtwork.url ? uploadedArtwork.url : uploadedArtwork.name}`
+      : ""
+  }\nPlease confirm the final price and delivery timeline.`;
 
   const addProduct = () =>
     addItem(
@@ -173,22 +185,25 @@ export function ProductDetail({ slug }: { slug?: string }) {
         name: product.name,
         category: product.category.name,
         image: product.image,
-        price: product.startingAt,
+        price: selectedPrice.amount,
         selectedOptions,
-        artworkName: uploadedFile?.name,
+        artworkName: uploadedArtwork?.name ?? uploadedFile?.name,
+        artworkUrl: uploadedArtwork?.url,
       },
       1,
     );
 
   const addProductWithDefaultOptions = (item: ProductLike) => {
     const options = getProductOptions(item);
+    const defaultSelections = getDefaultSelections(options);
+    const price = calculateProductPrice(item, defaultSelections);
     addItem({
       slug: item.slug,
       name: item.name,
       category: item.category.name,
       image: item.image,
-      price: item.startingAt,
-      selectedOptions: getVisibleSelections(options, getDefaultSelections(options)),
+      price: price.amount,
+      selectedOptions: getVisibleSelections(options, defaultSelections),
     });
   };
 
@@ -215,6 +230,26 @@ export function ProductDetail({ slug }: { slug?: string }) {
       setShareStatus("Link copied");
     } catch {
       setShareStatus("Copy link from address bar");
+    }
+  };
+
+  const uploadArtwork = async (file: File) => {
+    setUploadedFile(file);
+    setUploadedArtwork({ name: file.name, status: "uploading" });
+
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      const result = await api<{ url: string }>("/api/uploads", {
+        method: "POST",
+        body: JSON.stringify({
+          fileName: file.name,
+          mimeType: file.type,
+          dataUrl,
+        }),
+      });
+      setUploadedArtwork({ name: file.name, url: result.url, status: "uploaded" });
+    } catch {
+      setUploadedArtwork({ name: file.name, status: "local-only" });
     }
   };
 
@@ -333,36 +368,35 @@ export function ProductDetail({ slug }: { slug?: string }) {
             </div>
             <div className="mt-5 flex flex-wrap items-end gap-3">
               <div className="font-display text-3xl font-bold text-orange">
-                MRP Rs. {product.startingAt}
+                {selectedPrice.label}
               </div>
               {offerVisible && mrp && (
                 <div className="pb-1 text-sm text-muted-foreground line-through">MRP Rs. {mrp}</div>
               )}
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Tax included. Shipping calculated at checkout.
+              Updates automatically when you change quantity or print options.
             </p>
 
-            {(product.singleSidePrice || product.bothSidePrice) && (
+            {productPriceTiers && (
               <div className="mt-5 rounded-xl border bg-soft p-4">
                 <div className="text-sm font-bold text-navy">Price options from client sheet</div>
-                <div className="mt-3 grid gap-2 text-sm font-semibold text-foreground sm:grid-cols-2">
-                  {product.singleSidePrice && (
-                    <div className="rounded-lg bg-white p-3">
-                      <span className="block text-xs uppercase tracking-wide text-muted-foreground">
-                        Single side
-                      </span>
-                      Rs. {product.singleSidePrice}
+                <div className="mt-3 overflow-hidden rounded-lg border bg-white">
+                  <div className="grid grid-cols-3 bg-navy px-3 py-2 text-xs font-bold uppercase text-white">
+                    <span>Qty</span>
+                    <span>Single</span>
+                    <span>Both</span>
+                  </div>
+                  {productPriceTiers.map((tier) => (
+                    <div
+                      key={tier.quantity}
+                      className="grid grid-cols-3 border-t px-3 py-2 text-sm font-semibold text-foreground"
+                    >
+                      <span>{formatPrice(tier.quantity)}</span>
+                      <span>Rs. {formatPrice(tier.single)}</span>
+                      <span>Rs. {formatPrice(tier.both ?? tier.single * 1.5)}</span>
                     </div>
-                  )}
-                  {product.bothSidePrice && (
-                    <div className="rounded-lg bg-white p-3">
-                      <span className="block text-xs uppercase tracking-wide text-muted-foreground">
-                        Both side
-                      </span>
-                      Rs. {product.bothSidePrice}
-                    </div>
-                  )}
+                  ))}
                 </div>
               </div>
             )}
@@ -404,12 +438,19 @@ export function ProductDetail({ slug }: { slug?: string }) {
                 aria-label="Upload design file"
                 accept=".pdf,.ai,.cdr,.psd,.jpg,.jpeg,.png"
                 className="sr-only"
-                onChange={(event) => setUploadedFile(event.target.files?.[0] ?? null)}
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) void uploadArtwork(file);
+                }}
               />
             </div>
-            {uploadedFile && (
+            {uploadedArtwork && (
               <p className="mt-2 text-xs font-medium text-green-700">
-                Selected: {uploadedFile.name}. Send it with your WhatsApp order for confirmation.
+                {uploadedArtwork.status === "uploaded" && uploadedArtwork.url
+                  ? `Uploaded: ${uploadedArtwork.name}. It will be included with your quote request.`
+                  : uploadedArtwork.status === "uploading"
+                    ? `Uploading: ${uploadedArtwork.name}...`
+                    : `Selected: ${uploadedArtwork.name}. API upload is unavailable, so send it with your WhatsApp order.`}
               </p>
             )}
 
@@ -440,7 +481,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
               {selectedOptions.map((option) => (
                 <Spec key={option.id} label={option.label} value={option.value} />
               ))}
-              <Spec label="Starting Price" value={`Rs. ${product.startingAt}`} />
+              <Spec label="Selected Price" value={selectedPrice.label} />
             </div>
 
             <div className="mt-7 flex gap-3">
@@ -534,7 +575,7 @@ export function ProductDetail({ slug }: { slug?: string }) {
                   <Detail label="Finish" value="Matte, gloss, lamination or custom" />
                   <Detail label="Minimum order" value={product.quantity.split("/")[0].trim()} />
                   <Detail label="Available quantity" value={product.quantity} />
-                  <Detail label="Starting price" value={`Rs. ${product.startingAt}`} />
+                  <Detail label="Selected price" value={selectedPrice.label} />
                 </dl>
               )}
               {activeDetailTab === "other-information" && (
@@ -622,7 +663,12 @@ export function ProductDetail({ slug }: { slug?: string }) {
               <div className="text-sm text-muted-foreground">Total price from</div>
               <div className="font-display text-2xl font-bold text-navy">
                 Rs.{" "}
-                {[product, ...related.slice(0, 2)].reduce((sum, item) => sum + item.startingAt, 0)}
+                {formatPrice(
+                  [product, ...related.slice(0, 2)].reduce((sum, item) => {
+                    const options = getProductOptions(item);
+                    return sum + calculateProductPrice(item, getDefaultSelections(options)).amount;
+                  }, 0),
+                )}
               </div>
               <button
                 onClick={() => {
@@ -640,6 +686,15 @@ export function ProductDetail({ slug }: { slug?: string }) {
       </section>
     </SiteLayout>
   );
+}
+
+function readFileAsDataUrl(file: File) {
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
 }
 
 function ProductOptionField({

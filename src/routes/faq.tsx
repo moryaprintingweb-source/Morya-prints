@@ -32,6 +32,38 @@ export function FAQ() {
             "Pickup from the Kothrud shop is also available.",
           ],
         },
+        {
+          title: "What file formats do you accept?",
+          items: [
+            "PDF, AI, CDR, PSD, JPG and PNG files are accepted for most print jobs.",
+            "High-resolution, print-ready files help avoid delays and quality issues.",
+            "Our team can review margins, size, resolution and color concerns before production.",
+          ],
+        },
+        {
+          title: "How is pricing calculated?",
+          items: [
+            "Website prices are starting estimates for common sizes and quantities.",
+            "Final pricing depends on material, size, quantity, finishing, delivery and urgency.",
+            "Bulk orders and custom sizes are quoted after checking full requirements.",
+          ],
+        },
+        {
+          title: "Which payment methods are available?",
+          items: [
+            "Payment can be made by cash, UPI, bank transfer, cards or agreed digital methods.",
+            "Advance payment may be required for custom, bulk or urgent production orders.",
+            "GST and delivery charges are confirmed before final billing where applicable.",
+          ],
+        },
+        {
+          title: "Can you help with design?",
+          items: [
+            "Design assistance can be discussed for visiting cards, flyers, labels and signage.",
+            "Reference images, logo files, brand colors and exact text help speed up design work.",
+            "Design charges, if applicable, are confirmed before starting the artwork.",
+          ],
+        },
       ]}
     />
   );

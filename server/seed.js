@@ -17,10 +17,10 @@ const seedCatalog = [
       {
         slug: "visiting-cards-standard-visiting-cards",
         name: "Standard Visiting Cards",
-        starting_at: 199,
-        quantity: "500",
-        single_side_price: "199 / 299 / 499 / 999",
-        both_side_price: "299 / 399 / 799 / 1299",
+        starting_at: 300,
+        quantity: "100 / 200 / 500 / 1000",
+        single_side_price: "300 / 500 / 1200 / 1800",
+        both_side_price: "450 / 750 / 1800 / 2700",
         image_url: visuals[0],
         description:
           "Standard visiting cards from the Excel sheet with printing type and quantity options.",
@@ -28,10 +28,10 @@ const seedCatalog = [
       {
         slug: "visiting-cards-premium-visiting-cards",
         name: "Premium Visiting Cards",
-        starting_at: 799,
-        quantity: "500",
-        single_side_price: "799 / 1299 / 1899 / 2399",
-        both_side_price: "999 / 1499 / 2099 / 2499",
+        starting_at: 600,
+        quantity: "100 / 200 / 500 / 1000",
+        single_side_price: "600 / 900 / 1800 / 2200",
+        both_side_price: "900 / 1350 / 2700 / 3300",
         image_url: visuals[1],
         description:
           "Premium visiting cards from the Excel sheet with printing type, quantity and corner type options.",
@@ -46,11 +46,11 @@ const seedCatalog = [
       {
         slug: "flyers-pamphlets-90-gsm-flyers-glossy",
         name: "90 GSM Flyers (Glossy)",
-        starting_at: 1299,
-        quantity: "5000",
-        single_side_price: "1299 / 1699",
-        both_side_price: "1699 / 1999",
-        image_url: "/src/assets/products/flyers-pamphlets-a5-flyers.webp",
+        starting_at: 600,
+        quantity: "100 / 200 / 500 / 1000 / 2000 / 5000 / 10000",
+        single_side_price: "600 / 900 / 1200 / 1500 / 1800 / 4500 / 7200",
+        both_side_price: "900 / 1350 / 1800 / 2250 / 2700 / 6750 / 10800",
+        image_url: "/products/flyers-pamphlets-a5-flyers.webp",
         description:
           "90 GSM glossy flyers from the Excel sheet with size, printing type and quantity options.",
       },
@@ -64,18 +64,21 @@ const seedCatalog = [
       {
         slug: "bill-book-bill-book-b-w",
         name: "Bill Book B/W",
-        starting_at: 1500,
-        quantity: "5 Book",
-        single_side_price: "1500 / 1800",
-        image_url: "/src/assets/products/office-printing-receipt-books.jpg",
+        starting_at: 600,
+        quantity: "1 / 2 / 5 / 10 Books",
+        single_side_price: "600 / 900 / 1200 / 1800",
+        both_side_price: "900 / 1350 / 1800 / 2700",
+        image_url: "/products/office-printing-receipt-books.jpg",
         description:
           "Black-and-white bill book from the Excel sheet with size, printing type, copy and numbering options.",
       },
       {
         slug: "bill-book-prescription-pads",
         name: "Prescription Pads",
-        starting_at: 1799,
-        quantity: "1 Book",
+        starting_at: 600,
+        quantity: "1 / 2 / 5 / 10 Books",
+        single_side_price: "600 / 900 / 1200 / 1800",
+        both_side_price: "900 / 1350 / 1800 / 2700",
         image_url: visuals[1],
         description:
           "Prescription pad from the Excel sheet with size, printing type and book quantity options.",
@@ -90,10 +93,11 @@ const seedCatalog = [
       {
         slug: "letter-head-letterheads",
         name: "Letterheads",
-        starting_at: 2499,
-        quantity: "3000",
-        single_side_price: "2499",
-        image_url: "/src/assets/products/office-printing-letterheads.jpg",
+        starting_at: 500,
+        quantity: "100 / 200 / 500 / 1000",
+        single_side_price: "500 / 800 / 1500 / 2000",
+        both_side_price: "750 / 1200 / 2250 / 3000",
+        image_url: "/products/office-printing-letterheads.jpg",
         description: "Letterhead printing from the Excel sheet with quantity option.",
       },
     ],
@@ -106,10 +110,11 @@ const seedCatalog = [
       {
         slug: "envelope-envelopes",
         name: "Envelopes",
-        starting_at: 2699,
-        quantity: "200",
-        single_side_price: "2699",
-        image_url: "/src/assets/products/office-printing-envelopes.jpg",
+        starting_at: 700,
+        quantity: "100 / 200 / 500 / 1000",
+        single_side_price: "700 / 1200 / 1800 / 2400",
+        both_side_price: "1050 / 1800 / 2700 / 3600",
+        image_url: "/products/office-printing-envelopes.jpg",
         description: "Envelope printing from the Excel sheet with quantity option.",
       },
     ],
@@ -149,7 +154,7 @@ const seedCatalog = [
         name: "Regular Flex",
         starting_at: 22,
         quantity: "2",
-        image_url: "/src/assets/products/flex-printing-star-flex-printing.webp",
+        image_url: "/products/flex-printing-star-flex-printing.webp",
         description:
           "Regular flex from the Excel sheet with size, custom width, custom height and quantity options.",
       },
@@ -166,7 +171,7 @@ const seedCatalog = [
         starting_at: 25,
         quantity: "2",
         single_side_price: "25",
-        image_url: "/src/assets/products/vinyl-printing-vinyl-printing.jpg",
+        image_url: "/products/vinyl-printing-vinyl-printing.jpg",
         description:
           "Vinyl printing from the Excel sheet with size, custom width, custom height, lamination and quantity options.",
       },
@@ -304,6 +309,8 @@ const defaultBlogPosts = [
     title: "Importance of Professional Printing for Businesses",
     slug: "importance-of-professional-printing-for-businesses",
     excerpt: "Why quality printing still shapes brand perception in a digital-first world.",
+    content:
+      "Professional printing gives your business a sharper first impression. Visiting cards, brochures, flyers, menus, invoices and packaging labels are often handled by customers before they speak to your team.\n\nGood paper, clean color, correct alignment and neat finishing make the brand feel reliable. Poor print quality can quietly reduce trust, even when the product or service is strong.\n\nFor local businesses, consistent printed material also helps customers remember the name, phone number, address and offer. That is why print still matters alongside websites, WhatsApp and social media.",
     imageUrl: "https://images.unsplash.com/photo-1601924582970-9238bcb495d9?w=1000",
     tag: "Printing",
     publishedAt: "Jun 2026",
@@ -312,6 +319,8 @@ const defaultBlogPosts = [
     title: "How LED Signage Helps Brand Visibility",
     slug: "how-led-signage-helps-brand-visibility",
     excerpt: "The measurable impact of illuminated signage on foot traffic and recall.",
+    content:
+      "LED signage helps a shop or office stay visible in crowded streets, evening traffic and low-light conditions. A clear illuminated board can guide walk-in customers from a distance.\n\nThe biggest benefit is recall. When people pass the same location daily, a bright and readable sign helps them remember the business name when they need that service later.\n\nFor best results, keep the message short, use strong contrast and choose durable materials suitable for the location.",
     imageUrl: "https://images.unsplash.com/photo-1541417904950-b855846fe074?w=1000",
     tag: "Signage",
     publishedAt: "May 2026",
@@ -320,6 +329,8 @@ const defaultBlogPosts = [
     title: "Why Corporate Branding Matters",
     slug: "why-corporate-branding-matters",
     excerpt: "Consistent branding across every touchpoint builds unshakeable trust.",
+    content:
+      "Corporate branding is not only a logo. It includes the colors, fonts, tone, packaging, business stationery, signage and every printed item customers see.\n\nWhen these materials look consistent, the business feels organized and dependable. This is especially important for companies that meet clients, send quotations, deliver products or run events.\n\nA practical way to begin is by standardizing visiting cards, letterheads, envelopes, brochures, ID cards and presentation folders.",
     imageUrl: "https://images.unsplash.com/photo-1611095973763-414019e72400?w=1000",
     tag: "Branding",
     publishedAt: "Apr 2026",
@@ -328,6 +339,8 @@ const defaultBlogPosts = [
     title: "Benefits of High-Quality Packaging Labels",
     slug: "benefits-of-high-quality-packaging-labels",
     excerpt: "How premium labels influence purchase decisions and reduce returns.",
+    content:
+      "Packaging labels carry important details such as brand name, product type, price, ingredients, usage instructions, batch information and contact details.\n\nHigh-quality labels make products look more professional on shelves and during delivery. They also reduce confusion by keeping information readable and durable.\n\nChoose label material based on where the product will be used. Paper stickers work for many indoor products, while non-tearable or waterproof options are better for tougher handling.",
     imageUrl: "https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=1000",
     tag: "Packaging",
     publishedAt: "Mar 2026",
@@ -336,6 +349,8 @@ const defaultBlogPosts = [
     title: "Digital Printing vs Offset Printing",
     slug: "digital-printing-vs-offset-printing",
     excerpt: "Which technology fits your project - a practical decision framework.",
+    content:
+      "Digital printing is usually faster for small quantities and quick changes. It works well for short-run visiting cards, flyers, stickers, certificates and urgent marketing material.\n\nOffset printing is often better for large quantities where color consistency and per-piece cost matter. It is commonly used for bulk brochures, books, packaging and stationery.\n\nThe right choice depends on quantity, deadline, paper, finishing, budget and whether the artwork may change later.",
     imageUrl: "https://images.unsplash.com/photo-1560807707-8cc77767d783?w=1000",
     tag: "Guide",
     publishedAt: "Feb 2026",
@@ -398,15 +413,24 @@ export async function seedIfEmpty() {
 
   for (const post of defaultBlogPosts) {
     await pool.execute(
-      `INSERT INTO blog_posts (title, slug, excerpt, image_url, tag, published_at, is_active)
-       VALUES (?, ?, ?, ?, ?, ?, 1)
+      `INSERT INTO blog_posts (title, slug, excerpt, content, image_url, tag, published_at, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 1)
        ON DUPLICATE KEY UPDATE
         title = VALUES(title),
         excerpt = VALUES(excerpt),
+        content = VALUES(content),
         image_url = VALUES(image_url),
         tag = VALUES(tag),
         published_at = VALUES(published_at)`,
-      [post.title, post.slug, post.excerpt, post.imageUrl, post.tag, post.publishedAt],
+      [
+        post.title,
+        post.slug,
+        post.excerpt,
+        post.content,
+        post.imageUrl,
+        post.tag,
+        post.publishedAt,
+      ],
     );
   }
 }

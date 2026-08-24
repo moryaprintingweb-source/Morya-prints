@@ -19,6 +19,7 @@ import {
 } from "../data/product-options";
 import { useCart } from "../lib/cart";
 import { api, type ApiCategory, type ApiProduct } from "../lib/api";
+import { calculateProductPrice, formatPrice, getProductPriceTiers } from "../lib/pricing";
 import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 import heroImg from "../assets/hero.jpg";
 
@@ -120,19 +121,19 @@ export function Products() {
     [active, allProductsList, query],
   );
   const selected = categories.find((item) => item.slug === active);
+  const totalProductCount = allProductsList.length;
   const addProductWithDefaultOptions = (product: PublicProduct) => {
     const optionDefinitions = getProductOptions(product as (typeof allProducts)[number]);
-    const selectedOptions = getVisibleSelections(
-      optionDefinitions,
-      getDefaultSelections(optionDefinitions),
-    );
+    const selections = getDefaultSelections(optionDefinitions);
+    const selectedOptions = getVisibleSelections(optionDefinitions, selections);
+    const price = calculateProductPrice(product as (typeof allProducts)[number], selections);
 
     addItem({
       slug: product.slug,
       name: product.name,
       category: product.category.name,
       image: product.image || heroImg,
-      price: product.startingAt,
+      price: price.amount,
       selectedOptions,
     });
   };
@@ -142,7 +143,7 @@ export function Products() {
       <PageHero
         eyebrow="Print shop"
         title="Find the right print for every idea."
-        subtitle="Choose from 20 curated categories and 100 customisable products. Need something unique? We can help."
+        subtitle={`Choose from ${categories.length} curated categories and ${totalProductCount} customisable products. Need something unique? We can help.`}
         crumb="Products"
       />
       <section className="container-x py-10">
@@ -201,7 +202,7 @@ export function Products() {
           <div>
             <span className="eyebrow">{selected?.eyebrow ?? "All print products"}</span>
             <h2 className="section-title mt-2">
-              {selected ? selected.name : "Browse all 100 products"}
+              {selected ? selected.name : `Browse all ${totalProductCount} products`}
             </h2>
           </div>
           <span className="text-sm text-muted-foreground">{products.length} products shown</span>
@@ -210,6 +211,12 @@ export function Products() {
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {products.map((product) => {
               const offerVisible = isOfferVisible(product);
+              const optionDefinitions = getProductOptions(product as (typeof allProducts)[number]);
+              const defaultPrice = calculateProductPrice(
+                product as (typeof allProducts)[number],
+                getDefaultSelections(optionDefinitions),
+              );
+              const priceTiers = getProductPriceTiers(product as (typeof allProducts)[number]);
               return (
                 <article
                   key={`${product.category.slug}-${product.name}`}
@@ -247,7 +254,7 @@ export function Products() {
                           Starting at
                         </span>
                         <div className="font-display text-lg font-bold text-navy">
-                          Rs. {product.startingAt}
+                          {defaultPrice.label}
                         </div>
                         {isOfferVisible(product) &&
                           product.mrp &&
@@ -269,10 +276,29 @@ export function Products() {
                     </div>
                     {(product.singleSidePrice || product.bothSidePrice) && (
                       <div className="mt-3 grid gap-1 rounded-lg bg-soft p-3 text-[11px] font-semibold text-navy">
-                        {product.singleSidePrice && (
-                          <div>Single side: Rs. {product.singleSidePrice}</div>
+                        {priceTiers ? (
+                          <>
+                            <div>
+                              Single side: Rs.{" "}
+                              {priceTiers.map((tier) => formatPrice(tier.single)).join(" / ")}
+                            </div>
+                            <div>
+                              Both side: Rs.{" "}
+                              {priceTiers
+                                .map((tier) => formatPrice(tier.both ?? tier.single * 1.5))
+                                .join(" / ")}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            {product.singleSidePrice && (
+                              <div>Single side: Rs. {product.singleSidePrice}</div>
+                            )}
+                            {product.bothSidePrice && (
+                              <div>Both side: Rs. {product.bothSidePrice}</div>
+                            )}
+                          </>
                         )}
-                        {product.bothSidePrice && <div>Both side: Rs. {product.bothSidePrice}</div>}
                       </div>
                     )}
                     <Link

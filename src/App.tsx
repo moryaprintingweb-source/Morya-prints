@@ -12,10 +12,33 @@ import { ProductDetail } from "./routes/products_.$slug";
 import { Products } from "./routes/products";
 import { ReturnRefundPolicy } from "./routes/return-refund-policy";
 import { Services } from "./routes/services";
+import { ShippingPaymentPolicy } from "./routes/shipping-payment-policy";
 import { Support } from "./routes/support";
 import { TermsConditions } from "./routes/terms-conditions";
+import { useEffect } from "react";
 
 function NotFound() {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const robots = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    const previousRobots = robots?.content;
+    const robotsMeta = robots ?? document.createElement("meta");
+
+    document.title = "Page not found | Morya Printing Point";
+    robotsMeta.name = "robots";
+    robotsMeta.content = "noindex, nofollow";
+    if (!robots) document.head.appendChild(robotsMeta);
+
+    return () => {
+      document.title = previousTitle;
+      if (previousRobots !== undefined) {
+        robotsMeta.content = previousRobots;
+      } else {
+        robotsMeta.remove();
+      }
+    };
+  }, []);
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
@@ -74,6 +97,8 @@ export function App() {
       return <ReturnRefundPolicy />;
     case "/services":
       return <Services />;
+    case "/shipping-payment-policy":
+      return <ShippingPaymentPolicy />;
     case "/support":
       return <Support />;
     case "/terms-conditions":

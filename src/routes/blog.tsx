@@ -92,28 +92,15 @@ function toBlogCard(post: ApiBlogPost): BlogCard {
     img: post.image_url,
     date: post.published_at || "Latest",
     tag: post.tag || "Print",
-    content: [post.excerpt],
+    content: splitArticleContent(post.content || post.excerpt),
   };
 }
 
-function wordCount(paragraphs: string[]) {
-  return paragraphs.join(" ").trim().split(/\s+/).filter(Boolean).length;
-}
-
-function fullArticle(post: BlogCard) {
-  if (wordCount(post.content) >= 500) return post.content;
-
-  return [
-    ...post.content,
-    `${post.title} is an important topic for any business that depends on trust, visibility and repeat customers. ${post.excerpt} For a printing business, this subject is practical rather than theoretical because customers judge quality through the materials they can see, touch and carry with them. A visiting card, brochure, label, flyer, sign board or invoice may look like a small item, but it often becomes the first proof that a company is organized and serious about its work.`,
-    `The biggest advantage of planning print properly is consistency. When colors, paper quality, finishing, logo placement and contact details stay consistent across different items, the brand becomes easier to remember. Customers do not need to study the design to feel the difference. They simply notice that the business looks neat, reliable and professional. This matters for shops, clinics, offices, restaurants, events, schools, real estate teams and service providers because printed material is still used every day in local business communication.`,
-    `A strong ${post.tag.toLowerCase()} plan should begin with the purpose of the item. A brochure needs to explain. A flyer needs to attract attention quickly. A label needs to be readable and durable. A banner needs to be visible from a distance. A visiting card needs to make contact details easy to save. When the purpose is clear, it becomes easier to choose the right size, material, print method and finishing option. This prevents waste and helps the final output work harder for the business.`,
-    `Design also plays a major role. Simple layouts usually perform better than crowded ones because customers can understand the message quickly. Clear headings, enough spacing, readable fonts and good contrast make printed material easier to scan. Product photos, icons and brand colors should support the message instead of competing with it. Even small corrections, such as aligning text or improving margins, can make the final piece feel more premium without increasing the printing cost too much.`,
-    `Material selection is another decision that affects the final impression. A thicker card can make a visiting card feel more valuable. Gloss or matte lamination can protect frequently handled items. Vinyl, flex, sunboard and non-tearable sticker materials are useful when the print needs to survive outdoor conditions or rough handling. Paper stickers may be enough for indoor packaging, while waterproof labels may be better for products that travel, sit in refrigerators or face moisture.`,
-    `Businesses should also think about quantity and timing. Digital printing is useful for small batches, urgent jobs and designs that may change. Offset or larger production methods can make sense when the quantity is high and the artwork is final. Planning ahead gives the printer more room to check files, correct sizes, match colors and finish the job neatly. Last-minute printing is possible, but important brand material always benefits from a little breathing room.`,
-    `Before sending artwork for print, check the basics carefully. Confirm phone numbers, addresses, spelling, QR codes, social handles, prices, offers and product names. Make sure images are clear enough for the final size. If the print will be cut, folded, punched or laminated, keep important text away from the edges. These checks are small, but they save money and avoid reprinting. A good proofing habit is one of the simplest ways to protect print quality.`,
-    `For Morya Printing Point customers, the best approach is to share the business goal along with the artwork. Instead of only asking for a size and quantity, explain where the item will be used and who will see it. That helps the team suggest practical paper, material, finishing and production options. With the right combination of design, material and execution, printed products can support sales, improve recall and make the business look more trustworthy in every customer interaction.`,
-  ];
+function splitArticleContent(content: string) {
+  return content
+    .split(/\n{2,}/)
+    .map((paragraph) => paragraph.trim())
+    .filter(Boolean);
 }
 
 export function Blog() {
@@ -235,7 +222,7 @@ export function BlogDetail({ slug }: { slug: string }) {
               <Calendar className="h-4 w-4" /> {post.date}
             </div>
             <div className="mt-6 space-y-5 text-base leading-8 text-muted-foreground">
-              {fullArticle(post).map((paragraph) => (
+              {post.content.map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
               ))}
             </div>

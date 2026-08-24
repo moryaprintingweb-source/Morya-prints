@@ -175,7 +175,7 @@ export function Home() {
         <div className="grid gap-7 text-center sm:grid-cols-3">
           <Stat value="10,000+" label="Orders" />
           <Stat value="2,000+" label="Customers" />
-          <Stat value="200+" label="Products" />
+          <Stat value={`${catalogProducts.length}+`} label="Products" />
         </div>
       </section>
 
@@ -494,9 +494,9 @@ function ReviewsWall() {
         <div className="lg:self-center">
           <span className="eyebrow">Google reviews</span>
           <h2 className="mt-3 font-display text-3xl font-bold leading-[1.02] text-navy sm:text-4xl">
-            True Journeys. True
+            Real customers.
             <br />
-            Transformation.
+            Reliable prints.
           </h2>
           <a
             href={googleBusinessProfile}

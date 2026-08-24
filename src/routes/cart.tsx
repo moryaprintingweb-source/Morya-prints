@@ -11,33 +11,38 @@ export function Cart() {
   const { getSetting } = usePublicSiteSettings();
   const whatsappNumber = getSetting("business_whatsapp_number");
   const [saveStatus, setSaveStatus] = useState("");
-  const message = encodeURIComponent(
-    `Hello Morya Printing Point, I want a quote for:\n${items
-      .map((item) => {
-        const options = item.selectedOptions
-          .map((option) => `  ${option.label}: ${option.value}`)
-          .join("\n");
-        const artwork = item.artworkName ? `\n  Artwork: ${item.artworkName}` : "";
-        return `- ${item.name}${item.quantity > 1 ? ` (cart quantity: ${item.quantity})` : ""}${options ? `\n${options}` : ""}${artwork}`;
-      })
-      .join(
-        "\n",
-      )}\nStarting estimate from website: Rs. ${total}\nPlease confirm the final price and delivery timeline.`,
-  );
+  const [customer, setCustomer] = useState({ name: "", phone: "", email: "" });
+  const [requestingQuote, setRequestingQuote] = useState(false);
+  const message = `Hello Morya Printing Point, I want a quote for:\n${items
+    .map((item) => {
+      const options = item.selectedOptions
+        .map((option) => `  ${option.label}: ${option.value}`)
+        .join("\n");
+      const artwork = item.artworkName ? `\n  Artwork: ${item.artworkUrl || item.artworkName}` : "";
+      return `- ${item.name}${item.quantity > 1 ? ` (cart quantity: ${item.quantity})` : ""}${options ? `\n${options}` : ""}${artwork}`;
+    })
+    .join(
+      "\n",
+    )}\n\nCustomer:\nName: ${customer.name}\nPhone: ${customer.phone}\nEmail: ${customer.email}\n\nStarting estimate from website: Rs. ${total}\nPlease confirm the final price and delivery timeline.`;
   const saveQuoteRequest = async () => {
     try {
+      setRequestingQuote(true);
       setSaveStatus("Saving request...");
       const result = await api<{ id: number }>("/api/orders", {
         method: "POST",
         body: JSON.stringify({
+          customer,
           items,
           total,
           notes: "Created from website cart before WhatsApp quote request.",
         }),
       });
       setSaveStatus(`Saved as quote request #${result.id}`);
+      window.open(whatsappHref(whatsappNumber, message), "_blank", "noopener,noreferrer");
     } catch (error) {
       setSaveStatus(error instanceof Error ? error.message : "Unable to save quote request");
+    } finally {
+      setRequestingQuote(false);
     }
   };
 
@@ -102,7 +107,19 @@ export function Cart() {
                     )}
                     {item.artworkName && (
                       <p className="mt-2 text-xs font-medium text-green-700">
-                        Artwork selected: {item.artworkName}
+                        Artwork:{" "}
+                        {item.artworkUrl ? (
+                          <a
+                            href={item.artworkUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          >
+                            {item.artworkName}
+                          </a>
+                        ) : (
+                          item.artworkName
+                        )}
                       </p>
                     )}
                     <div className="mt-4 inline-flex items-center rounded-full border bg-white">
@@ -150,15 +167,38 @@ export function Cart() {
                 Product options do not change the website estimate yet. Final pricing is confirmed
                 with your quote.
               </p>
-              <a
-                href={whatsappHref(whatsappNumber, message)}
-                target="_blank"
-                rel="noreferrer"
+              <div className="mt-5 grid gap-3">
+                <Field
+                  label="Name"
+                  value={customer.name}
+                  onChange={(value) => setCustomer((current) => ({ ...current, name: value }))}
+                />
+                <Field
+                  label="Phone"
+                  type="tel"
+                  value={customer.phone}
+                  onChange={(value) => setCustomer((current) => ({ ...current, phone: value }))}
+                />
+                <Field
+                  label="Email"
+                  type="email"
+                  value={customer.email}
+                  onChange={(value) => setCustomer((current) => ({ ...current, email: value }))}
+                />
+              </div>
+              <button
+                type="button"
+                disabled={
+                  requestingQuote ||
+                  !customer.name.trim() ||
+                  !customer.phone.trim() ||
+                  !customer.email.trim()
+                }
                 className="btn-primary mt-6 w-full"
-                onClick={saveQuoteRequest}
+                onClick={() => void saveQuoteRequest()}
               >
-                Request quote on WhatsApp
-              </a>
+                {requestingQuote ? "Saving request..." : "Request quote on WhatsApp"}
+              </button>
               {saveStatus && (
                 <p className="mt-3 text-xs font-semibold text-muted-foreground" role="status">
                   {saveStatus}
@@ -172,5 +212,30 @@ export function Cart() {
         )}
       </section>
     </SiteLayout>
+  );
+}
+
+function Field({
+  label,
+  type = "text",
+  value,
+  onChange,
+}: {
+  label: string;
+  type?: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <label className="block text-xs font-bold uppercase tracking-wide text-muted-foreground">
+      {label}
+      <input
+        type={type}
+        required
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 text-sm font-medium text-navy outline-none focus:ring-2 focus:ring-cyan"
+      />
+    </label>
   );
 }
