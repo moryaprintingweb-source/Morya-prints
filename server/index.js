@@ -34,6 +34,7 @@ const SMTP_USER = process.env.SMTP_USER;
 const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
 const SMTP_FROM = process.env.SMTP_FROM ?? SMTP_USER;
 const INQUIRY_NOTIFY_EMAIL = process.env.INQUIRY_NOTIFY_EMAIL ?? ADMIN_EMAIL;
+const WEB3FORMS_ACCESS_KEY = process.env.WEB3FORMS_ACCESS_KEY;
 let databaseReady = false;
 let databaseError = "";
 
@@ -118,6 +119,34 @@ function getInquiryMailer() {
 }
 
 async function notifyInquiry(inquiry) {
+  if (WEB3FORMS_ACCESS_KEY) {
+    const response = await fetch("https://api.web3forms.com/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        access_key: WEB3FORMS_ACCESS_KEY,
+        subject: `New enquiry from ${inquiry.name} - ${inquiry.service}`,
+        from_name: "Morya Printing Website",
+        name: inquiry.name,
+        phone: inquiry.phone,
+        email: inquiry.email,
+        service: inquiry.service,
+        message: inquiry.message,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Web3Forms notification failed with status ${response.status}`);
+    }
+
+    const result = await response.json().catch(() => ({}));
+    if (result.success === false) {
+      throw new Error(result.message ?? "Web3Forms notification failed");
+    }
+
+    return true;
+  }
+
   const mailer = getInquiryMailer();
   if (!mailer) return false;
 
