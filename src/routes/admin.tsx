@@ -32,6 +32,7 @@ import {
   type ApiGalleryItem,
   type ApiProduct,
 } from "../lib/api";
+import { toast } from "sonner";
 
 type Summary = {
   products: number;
@@ -832,6 +833,7 @@ export function Admin() {
     event.preventDefault();
     if (usingFallbackCatalog) {
       setError("Website database is not connected. Website settings cannot be saved yet.");
+      toast.error("Database is not connected. Settings were not saved.");
       return;
     }
     try {
@@ -840,9 +842,12 @@ export function Admin() {
         body: JSON.stringify({ settings: siteSettings }),
       });
       setNotice("Settings saved. Refresh the storefront to see changes.");
+      toast.success("Settings saved.");
       await loadAdminData();
     } catch (settingError) {
-      setError(settingError instanceof Error ? settingError.message : "Unable to save settings");
+      const message = settingError instanceof Error ? settingError.message : "Unable to save settings";
+      setError(message);
+      toast.error(message);
     }
   }
 
@@ -2157,8 +2162,11 @@ function ImageUploadField({
       const url = await onUpload(file);
       onChange(url);
       setStatus("Image uploaded. Save changes to publish it.");
+      toast.success("Image uploaded. Click Save Changes to publish it.");
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : "Unable to upload image");
+      const message = error instanceof Error ? error.message : "Unable to upload image";
+      setStatus(message);
+      toast.error(message);
     } finally {
       event.target.value = "";
     }
