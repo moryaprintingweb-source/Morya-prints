@@ -1,21 +1,59 @@
-import { About } from "./routes/about";
-import { Admin } from "./routes/admin";
-import { Blog, BlogDetail } from "./routes/blog";
-import { Cart } from "./routes/cart";
-import { Contact } from "./routes/contact";
-import { FAQ } from "./routes/faq";
-import { Gallery } from "./routes/gallery";
-import { Home } from "./routes";
-import { Industries } from "./routes/industries";
-import { PrivacyPolicy } from "./routes/privacy-policy";
-import { ProductDetail } from "./routes/products_.$slug";
-import { Products } from "./routes/products";
-import { ReturnRefundPolicy } from "./routes/return-refund-policy";
-import { Services } from "./routes/services";
-import { ShippingPaymentPolicy } from "./routes/shipping-payment-policy";
-import { Support } from "./routes/support";
-import { TermsConditions } from "./routes/terms-conditions";
-import { useEffect } from "react";
+import { lazy, Suspense, useEffect, type ReactNode } from "react";
+
+const About = lazy(() => import("./routes/about").then((module) => ({ default: module.About })));
+const Admin = lazy(() => import("./routes/admin").then((module) => ({ default: module.Admin })));
+const Blog = lazy(() => import("./routes/blog").then((module) => ({ default: module.Blog })));
+const BlogDetail = lazy(() =>
+  import("./routes/blog").then((module) => ({ default: module.BlogDetail })),
+);
+const Cart = lazy(() => import("./routes/cart").then((module) => ({ default: module.Cart })));
+const Contact = lazy(() =>
+  import("./routes/contact").then((module) => ({ default: module.Contact })),
+);
+const FAQ = lazy(() => import("./routes/faq").then((module) => ({ default: module.FAQ })));
+const Gallery = lazy(() =>
+  import("./routes/gallery").then((module) => ({ default: module.Gallery })),
+);
+const Home = lazy(() => import("./routes").then((module) => ({ default: module.Home })));
+const Industries = lazy(() =>
+  import("./routes/industries").then((module) => ({ default: module.Industries })),
+);
+const PrivacyPolicy = lazy(() =>
+  import("./routes/privacy-policy").then((module) => ({ default: module.PrivacyPolicy })),
+);
+const ProductDetail = lazy(() =>
+  import("./routes/products_.$slug").then((module) => ({ default: module.ProductDetail })),
+);
+const Products = lazy(() =>
+  import("./routes/products").then((module) => ({ default: module.Products })),
+);
+const ReturnRefundPolicy = lazy(() =>
+  import("./routes/return-refund-policy").then((module) => ({
+    default: module.ReturnRefundPolicy,
+  })),
+);
+const Services = lazy(() =>
+  import("./routes/services").then((module) => ({ default: module.Services })),
+);
+const ShippingPaymentPolicy = lazy(() =>
+  import("./routes/shipping-payment-policy").then((module) => ({
+    default: module.ShippingPaymentPolicy,
+  })),
+);
+const Support = lazy(() =>
+  import("./routes/support").then((module) => ({ default: module.Support })),
+);
+const TermsConditions = lazy(() =>
+  import("./routes/terms-conditions").then((module) => ({ default: module.TermsConditions })),
+);
+
+function RouteLoading() {
+  return <div className="min-h-screen bg-background" />;
+}
+
+function LazyRoute({ children }: { children: ReactNode }) {
+  return <Suspense fallback={<RouteLoading />}>{children}</Suspense>;
+}
 
 function NotFound() {
   useEffect(() => {
@@ -63,47 +101,75 @@ export function App() {
   const blogMatch = pathname.match(/^\/blog\/([^/]+)\/?$/);
 
   if (productMatch?.[1]) {
-    return <ProductDetail slug={decodeURIComponent(productMatch[1])} />;
+    return (
+      <LazyRoute>
+        <ProductDetail slug={decodeURIComponent(productMatch[1])} />
+      </LazyRoute>
+    );
   }
 
   if (blogMatch?.[1]) {
-    return <BlogDetail slug={decodeURIComponent(blogMatch[1])} />;
+    return (
+      <LazyRoute>
+        <BlogDetail slug={decodeURIComponent(blogMatch[1])} />
+      </LazyRoute>
+    );
   }
+
+  let route: ReactNode;
 
   switch (pathname.replace(/\/$/, "") || "/") {
     case "/":
-      return <Home />;
+      route = <Home />;
+      break;
     case "/about":
-      return <About />;
+      route = <About />;
+      break;
     case "/admin":
-      return <Admin />;
+      route = <Admin />;
+      break;
     case "/blog":
-      return <Blog />;
+      route = <Blog />;
+      break;
     case "/cart":
-      return <Cart />;
+      route = <Cart />;
+      break;
     case "/contact":
-      return <Contact />;
+      route = <Contact />;
+      break;
     case "/faq":
-      return <FAQ />;
+      route = <FAQ />;
+      break;
     case "/gallery":
-      return <Gallery />;
+      route = <Gallery />;
+      break;
     case "/industries":
-      return <Industries />;
+      route = <Industries />;
+      break;
     case "/privacy-policy":
-      return <PrivacyPolicy />;
+      route = <PrivacyPolicy />;
+      break;
     case "/products":
-      return <Products />;
+      route = <Products />;
+      break;
     case "/return-refund-policy":
-      return <ReturnRefundPolicy />;
+      route = <ReturnRefundPolicy />;
+      break;
     case "/services":
-      return <Services />;
+      route = <Services />;
+      break;
     case "/shipping-payment-policy":
-      return <ShippingPaymentPolicy />;
+      route = <ShippingPaymentPolicy />;
+      break;
     case "/support":
-      return <Support />;
+      route = <Support />;
+      break;
     case "/terms-conditions":
-      return <TermsConditions />;
+      route = <TermsConditions />;
+      break;
     default:
-      return <NotFound />;
+      route = <NotFound />;
   }
+
+  return <LazyRoute>{route}</LazyRoute>;
 }

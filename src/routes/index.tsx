@@ -638,12 +638,17 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
             }`}
             aria-hidden={index !== activeSlide}
           >
-            <img
-              src={slide.image}
-              alt=""
-              className="h-full w-full object-cover"
-              onError={(event) => restoreImageFallback(event, slide.fallbackImage)}
-            />
+            {index === activeSlide && (
+              <img
+                src={slide.image}
+                alt=""
+                className="h-full w-full object-cover"
+                decoding="async"
+                fetchPriority={index === 0 ? "high" : "auto"}
+                loading={index === 0 ? "eager" : "lazy"}
+                onError={(event) => restoreImageFallback(event, slide.fallbackImage)}
+              />
+            )}
             <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/55 to-navy/10" />
           </div>
         ))}
@@ -760,6 +765,7 @@ function CategoryCarousel({
               <img
                 src={category.image}
                 alt={category.name}
+                decoding="async"
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
               />
@@ -816,6 +822,7 @@ function ProductSection({
                 <img
                   src={product.image}
                   alt={product.name}
+                  decoding="async"
                   loading="lazy"
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 />
@@ -862,6 +869,8 @@ function PromoBand({
         src={image}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-85"
+        decoding="async"
+        loading="lazy"
         onError={(event) => restoreImageFallback(event, fallbackImage)}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-navy/55 via-transparent to-transparent" />
