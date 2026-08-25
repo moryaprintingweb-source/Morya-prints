@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import cors from "cors";
 import express from "express";
 import { mkdir, writeFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import jwt from "jsonwebtoken";
@@ -22,6 +23,7 @@ const clientOrigins =
     .filter(Boolean) ?? [];
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
+const distDir = path.join(projectRoot, "dist");
 const uploadDir = path.join(projectRoot, "public", "uploads");
 const uploadsPublicBaseUrl = (process.env.UPLOADS_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
 let databaseReady = false;
@@ -776,6 +778,19 @@ app.patch("/api/admin/orders/:id/status", async (req, res, next) => {
     next(error);
   }
 });
+
+if (existsSync(distDir)) {
+  app.use(express.static(distDir));
+
+  app.use((req, res, next) => {
+    if (req.method !== "GET" || req.path.startsWith("/api")) {
+      next();
+      return;
+    }
+
+    res.sendFile(path.join(distDir, "index.html"));
+  });
+}
 
 app.use((error, _req, res, _next) => {
   console.error(error);
