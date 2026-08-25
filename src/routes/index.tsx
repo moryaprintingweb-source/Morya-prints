@@ -1,5 +1,5 @@
 import { Link } from "../components/site/Link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SyntheticEvent } from "react";
 import {
   ArrowRight,
   Check,
@@ -233,6 +233,7 @@ export function Home() {
         <div className="grid gap-px bg-border lg:grid-cols-2">
           <PromoBand
             image={promoLeftImage}
+            fallbackImage={ledImg}
             eyebrow={settingText(
               siteSettings,
               "home_promo_left_eyebrow",
@@ -251,6 +252,7 @@ export function Home() {
           />
           <PromoBand
             image={promoRightImage}
+            fallbackImage={printingImg}
             eyebrow={settingText(
               siteSettings,
               "home_promo_right_eyebrow",
@@ -423,6 +425,12 @@ function settingImage(settings: SiteSettingMap, key: string, fallback: string) {
 
 function settingText(settings: SiteSettingMap, key: string, fallback: string) {
   return settings[key]?.value?.trim() || fallback;
+}
+
+function restoreImageFallback(event: SyntheticEvent<HTMLImageElement>, fallback: string) {
+  const image = event.currentTarget;
+  const fallbackUrl = new URL(fallback, window.location.origin).href;
+  if (image.src !== fallbackUrl) image.src = fallback;
 }
 
 const googleBusinessProfile = "https://share.google/mgKsD0HQ5OS26Xewa";
@@ -599,6 +607,7 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
   const heroSlides = defaultHeroSlides.map((slide, index) => ({
     ...slide,
     image: settingImage(settings, `home_hero_${index + 1}_image`, slide.image),
+    fallbackImage: slide.image,
     eyebrow: settingText(settings, `home_hero_${index + 1}_eyebrow`, slide.eyebrow),
     title: settingText(settings, `home_hero_${index + 1}_title`, slide.title),
     text: settingText(settings, `home_hero_${index + 1}_text`, slide.text),
@@ -629,7 +638,12 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
             }`}
             aria-hidden={index !== activeSlide}
           >
-            <img src={slide.image} alt="" className="h-full w-full object-cover" />
+            <img
+              src={slide.image}
+              alt=""
+              className="h-full w-full object-cover"
+              onError={(event) => restoreImageFallback(event, slide.fallbackImage)}
+            />
             <div className="absolute inset-0 bg-gradient-to-r from-navy/90 via-navy/55 to-navy/10" />
           </div>
         ))}
@@ -831,18 +845,25 @@ function ProductSection({
 
 function PromoBand({
   image,
+  fallbackImage,
   eyebrow,
   title,
   actions,
 }: {
   image: string;
+  fallbackImage: string;
   eyebrow: string;
   title: string;
   actions: { label: string; slug: string }[];
 }) {
   return (
     <div className="relative min-h-[360px] overflow-hidden bg-navy">
-      <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover opacity-85" />
+      <img
+        src={image}
+        alt=""
+        className="absolute inset-0 h-full w-full object-cover opacity-85"
+        onError={(event) => restoreImageFallback(event, fallbackImage)}
+      />
       <div className="absolute inset-0 bg-gradient-to-t from-navy/55 via-transparent to-transparent" />
       <div className="absolute bottom-4 left-4 right-4 rounded-lg bg-white p-4 shadow-xl sm:bottom-6 sm:left-5 sm:right-5 sm:p-5 md:left-8 md:right-auto md:max-w-[340px]">
         <span className="text-xs font-extrabold uppercase tracking-wide text-orange">
