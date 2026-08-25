@@ -845,7 +845,8 @@ export function Admin() {
       toast.success("Settings saved.");
       await loadAdminData();
     } catch (settingError) {
-      const message = settingError instanceof Error ? settingError.message : "Unable to save settings";
+      const message =
+        settingError instanceof Error ? settingError.message : "Unable to save settings";
       setError(message);
       toast.error(message);
     }
