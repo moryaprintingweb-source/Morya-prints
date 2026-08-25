@@ -99,8 +99,16 @@ export function Contact() {
                 <p className="text-sm text-muted-foreground">All fields are required.</p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full Name" name="name" placeholder="John Doe" />
-                <Field label="Phone" name="phone" type="tel" placeholder="+91 98765 43210" />
+                <Field label="Full Name" name="name" placeholder="John Doe" minLength={2} />
+                <Field
+                  label="Phone"
+                  name="phone"
+                  type="tel"
+                  placeholder="+91 98765 43210"
+                  minLength={7}
+                  pattern="^[+()\-\s0-9]+$"
+                  title="Use only digits, spaces, +, - and brackets"
+                />
               </div>
               <Field label="Email" name="email" type="email" placeholder="you@company.com" />
               <div>
@@ -127,6 +135,7 @@ export function Contact() {
                   id="message"
                   name="message"
                   required
+                  minLength={10}
                   rows={4}
                   placeholder="Tell us about your project..."
                   className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan"
@@ -183,11 +192,17 @@ function Field({
   name,
   type = "text",
   placeholder,
+  minLength,
+  pattern,
+  title,
 }: {
   label: string;
   name: string;
   type?: string;
   placeholder?: string;
+  minLength?: number;
+  pattern?: string;
+  title?: string;
 }) {
   return (
     <div>
@@ -199,6 +214,9 @@ function Field({
         name={name}
         type={type}
         required
+        minLength={minLength}
+        pattern={pattern}
+        title={title}
         placeholder={placeholder}
         className="mt-1.5 w-full rounded-lg border bg-white px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-cyan"
       />

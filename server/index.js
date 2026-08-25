@@ -7,6 +7,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import jwt from "jsonwebtoken";
+import nodemailer from "nodemailer";
+import { z } from "zod";
 import { ensureDatabase, pool, query } from "./db.js";
 import { seedIfEmpty } from "./seed.js";
 
@@ -26,8 +28,27 @@ const projectRoot = path.resolve(__dirname, "..");
 const distDir = path.join(projectRoot, "dist");
 const uploadDir = path.join(projectRoot, "public", "uploads");
 const uploadsPublicBaseUrl = (process.env.UPLOADS_PUBLIC_BASE_URL ?? "").replace(/\/+$/, "");
+const SMTP_HOST = process.env.SMTP_HOST;
+const SMTP_PORT = Number(process.env.SMTP_PORT ?? 587);
+const SMTP_USER = process.env.SMTP_USER;
+const SMTP_PASSWORD = process.env.SMTP_PASSWORD;
+const SMTP_FROM = process.env.SMTP_FROM ?? SMTP_USER;
+const INQUIRY_NOTIFY_EMAIL = process.env.INQUIRY_NOTIFY_EMAIL ?? ADMIN_EMAIL;
 let databaseReady = false;
 let databaseError = "";
+
+const inquirySchema = z.object({
+  name: z.string().trim().min(2, "Name must be at least 2 characters").max(180),
+  phone: z
+    .string()
+    .trim()
+    .min(7, "Phone number is too short")
+    .max(60)
+    .regex(/^[+()\-\s0-9]+$/, "Phone number can only contain digits, spaces, +, - and brackets"),
+  email: z.string().trim().email("Enter a valid email address").max(180),
+  service: z.string().trim().min(1, "Select a service").max(180),
+  message: z.string().trim().min(10, "Message must be at least 10 characters").max(5000),
+});
 
 function validateProductionConfig() {
   if (!isProduction) return;
@@ -78,6 +99,47 @@ function toBool(value) {
 function getUploadUrl(savedName) {
   const uploadPath = `/uploads/${savedName}`;
   return uploadsPublicBaseUrl ? `${uploadsPublicBaseUrl}${uploadPath}` : uploadPath;
+}
+
+function getInquiryMailer() {
+  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASSWORD || !SMTP_FROM || !INQUIRY_NOTIFY_EMAIL) {
+    return null;
+  }
+
+  return nodemailer.createTransport({
+    host: SMTP_HOST,
+    port: SMTP_PORT,
+    secure: SMTP_PORT === 465,
+    auth: {
+      user: SMTP_USER,
+      pass: SMTP_PASSWORD,
+    },
+  });
+}
+
+async function notifyInquiry(inquiry) {
+  const mailer = getInquiryMailer();
+  if (!mailer) return false;
+
+  await mailer.sendMail({
+    from: SMTP_FROM,
+    to: INQUIRY_NOTIFY_EMAIL,
+    replyTo: inquiry.email,
+    subject: `New enquiry from ${inquiry.name} - ${inquiry.service}`,
+    text: [
+      "New website enquiry",
+      "",
+      `Name: ${inquiry.name}`,
+      `Phone: ${inquiry.phone}`,
+      `Email: ${inquiry.email}`,
+      `Service: ${inquiry.service}`,
+      "",
+      "Message:",
+      inquiry.message,
+    ].join("\n"),
+  });
+
+  return true;
 }
 
 function requireAdmin(req, res, next) {
@@ -280,18 +342,33 @@ app.post("/api/uploads", async (req, res, next) => {
 
 app.post("/api/inquiries", requireDatabase, async (req, res, next) => {
   try {
-    const { name, phone, email, service, message } = req.body;
-    if (!name || !phone || !email || !service || !message) {
-      res.status(400).json({ message: "All inquiry fields are required" });
+    const parsed = inquirySchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({
+        message: parsed.error.issues[0]?.message ?? "Please check the inquiry details",
+      });
       return;
     }
+
+    const { name, phone, email, service, message } = parsed.data;
 
     const [result] = await pool.execute(
       `INSERT INTO inquiries (name, phone, email, service, message)
        VALUES (?, ?, ?, ?, ?)`,
       [name, phone, email, service, message],
     );
-    res.status(201).json({ id: result.insertId });
+
+    let emailSent = false;
+    try {
+      emailSent = await notifyInquiry({ name, phone, email, service, message });
+    } catch (mailError) {
+      console.error(
+        "Inquiry email notification failed:",
+        mailError instanceof Error ? mailError.message : mailError,
+      );
+    }
+
+    res.status(201).json({ id: result.insertId, emailSent });
   } catch (error) {
     next(error);
   }
