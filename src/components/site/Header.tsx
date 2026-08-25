@@ -74,7 +74,7 @@ export function Header() {
     <header
       className={`sticky top-0 z-50 w-full transition-all ${
         scrolled
-          ? "bg-white/95 backdrop-blur shadow-[0_2px_20px_-8px_rgba(11,31,58,0.15)]"
+          ? "bg-white/95 shadow-[0_2px_20px_-8px_rgba(11,31,58,0.15)] md:backdrop-blur"
           : "bg-white"
       }`}
     >
@@ -91,11 +91,18 @@ export function Header() {
       </div>
       <div className="container-x flex h-20 items-center justify-between gap-3 py-2 md:h-22 md:py-3">
         <Link to="/" className="flex items-center gap-3 shrink-0">
-          <img
-            src="/morya-icon-logo.png"
-            alt="Morya Printing Point"
-            className="h-14 w-14 md:h-16 md:w-16"
-          />
+          <picture>
+            <source srcSet="/morya-icon-logo.webp" type="image/webp" />
+            <img
+              src="/morya-icon-logo.png"
+              alt="Morya Printing Point"
+              width="64"
+              height="64"
+              decoding="async"
+              fetchPriority="high"
+              className="h-14 w-14 md:h-16 md:w-16"
+            />
+          </picture>
           <div className="hidden sm:block leading-tight">
             <div className="font-display font-bold text-navy text-[15px]">Morya Printing Point</div>
             <div className="text-[10px] tracking-[0.16em] uppercase text-orange font-bold">

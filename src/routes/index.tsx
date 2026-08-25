@@ -19,6 +19,15 @@ import { usePublicSiteSettings, whatsappHref } from "../lib/site-settings";
 import heroImg from "../assets/hero.jpg";
 import printingImg from "../assets/printing.jpg";
 import ledImg from "../assets/led-sign.jpg";
+import heroMobileImg from "../assets/mobile/hero.webp";
+import printingMobileImg from "../assets/mobile/printing.webp";
+import ledMobileImg from "../assets/mobile/led-sign.webp";
+import flexStarMobileImg from "../assets/mobile/flex-printing-star-flex-printing.webp";
+import flyersMobileImg from "../assets/mobile/flyers-pamphlets-a5-flyers.webp";
+import envelopesMobileImg from "../assets/mobile/office-printing-envelopes.webp";
+import letterheadsMobileImg from "../assets/mobile/office-printing-letterheads.webp";
+import receiptBooksMobileImg from "../assets/mobile/office-printing-receipt-books.webp";
+import vinylPrintingMobileImg from "../assets/mobile/vinyl-printing-vinyl-printing.webp";
 import {
   Accordion,
   AccordionContent,
@@ -41,12 +50,39 @@ const categoryHighlights = [
 
 const homeVisuals = [heroImg, printingImg, ledImg];
 
+const mobileImageMap = new Map(
+  [
+    [heroImg, heroMobileImg],
+    [printingImg, printingMobileImg],
+    [ledImg, ledMobileImg],
+    [catalogProducts.find((product) => product.name === "Regular Flex")?.image, flexStarMobileImg],
+    [
+      catalogProducts.find((product) => product.name === "90 GSM Flyers (Glossy)")?.image,
+      flyersMobileImg,
+    ],
+    [catalogProducts.find((product) => product.name === "Envelopes")?.image, envelopesMobileImg],
+    [
+      catalogProducts.find((product) => product.name === "Letterheads")?.image,
+      letterheadsMobileImg,
+    ],
+    [
+      catalogProducts.find((product) => product.name === "Bill Book B/W")?.image,
+      receiptBooksMobileImg,
+    ],
+    [
+      catalogProducts.find((product) => product.name === "Vinyl Printing")?.image,
+      vinylPrintingMobileImg,
+    ],
+  ].filter((entry): entry is [string, string] => Boolean(entry[0])),
+);
+
 type SiteSettingMap = Record<string, { value: string; label: string }>;
 type PublicCategory = ApiCategory & { product_count?: number };
 
 const defaultHeroSlides = [
   {
     image: heroImg,
+    mobileImage: heroMobileImg,
     eyebrow: "Business essentials",
     title: "Premium visiting cards, flyers and office prints.",
     text: "Start with crisp everyday print products made for Pune businesses.",
@@ -57,6 +93,7 @@ const defaultHeroSlides = [
   },
   {
     image: printingImg,
+    mobileImage: printingMobileImg,
     eyebrow: "Brand visibility",
     title: "Custom signage, vinyl, flex and display prints.",
     text: "Make your shop, event or campaign look polished from every angle.",
@@ -67,6 +104,7 @@ const defaultHeroSlides = [
   },
   {
     image: ledImg,
+    mobileImage: ledMobileImg,
     eyebrow: "Storefront impact",
     title: "Brochures, bill books and branded stationery for everyday business.",
     text: "Choose practical materials, sharp finishing and local support for every print job.",
@@ -299,6 +337,7 @@ export function Home() {
           <img
             src={heroImg}
             alt="Printed stationery samples"
+            decoding="async"
             loading="lazy"
             className="h-full min-h-[260px] w-full rounded-lg object-cover"
           />
@@ -602,22 +641,63 @@ function productImage(image: string | undefined, index: number) {
   return repeatedGeneric ? homeVisuals[index % homeVisuals.length] : image;
 }
 
+function mobileImageFor(image: string) {
+  return mobileImageMap.get(image);
+}
+
+function ResponsiveImage({
+  src,
+  mobileSrc,
+  alt,
+  className,
+  loading = "lazy",
+  fetchPriority,
+  onError,
+}: {
+  src: string;
+  mobileSrc?: string;
+  alt: string;
+  className: string;
+  loading?: "eager" | "lazy";
+  fetchPriority?: "high" | "low" | "auto";
+  onError?: (event: SyntheticEvent<HTMLImageElement>) => void;
+}) {
+  return (
+    <picture>
+      {mobileSrc && <source srcSet={mobileSrc} media="(max-width: 767px)" type="image/webp" />}
+      <img
+        src={src}
+        alt={alt}
+        className={className}
+        decoding="async"
+        fetchPriority={fetchPriority}
+        loading={loading}
+        onError={onError}
+      />
+    </picture>
+  );
+}
+
 function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
   const [activeSlide, setActiveSlide] = useState(0);
-  const heroSlides = defaultHeroSlides.map((slide, index) => ({
-    ...slide,
-    image: settingImage(settings, `home_hero_${index + 1}_image`, slide.image),
-    fallbackImage: slide.image,
-    eyebrow: settingText(settings, `home_hero_${index + 1}_eyebrow`, slide.eyebrow),
-    title: settingText(settings, `home_hero_${index + 1}_title`, slide.title),
-    text: settingText(settings, `home_hero_${index + 1}_text`, slide.text),
-    actions: [
-      {
-        label: settingText(settings, `home_hero_${index + 1}_button`, slide.actions[0].label),
-        slug: settingText(settings, `home_hero_${index + 1}_slug`, slide.actions[0].slug),
-      },
-    ],
-  }));
+  const heroSlides = defaultHeroSlides.map((slide, index) => {
+    const customImage = settings[`home_hero_${index + 1}_image`]?.value?.trim();
+    return {
+      ...slide,
+      image: customImage || slide.image,
+      mobileImage: customImage ? undefined : slide.mobileImage,
+      fallbackImage: slide.image,
+      eyebrow: settingText(settings, `home_hero_${index + 1}_eyebrow`, slide.eyebrow),
+      title: settingText(settings, `home_hero_${index + 1}_title`, slide.title),
+      text: settingText(settings, `home_hero_${index + 1}_text`, slide.text),
+      actions: [
+        {
+          label: settingText(settings, `home_hero_${index + 1}_button`, slide.actions[0].label),
+          slug: settingText(settings, `home_hero_${index + 1}_slug`, slide.actions[0].slug),
+        },
+      ],
+    };
+  });
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -629,7 +709,7 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
 
   return (
     <section className="w-full border-b bg-white">
-      <div className="relative min-h-[520px] overflow-hidden bg-navy md:min-h-[560px]">
+      <div className="relative min-h-[430px] overflow-hidden bg-navy sm:min-h-[500px] md:min-h-[560px]">
         {heroSlides.map((slide, index) => (
           <div
             key={slide.title}
@@ -639,11 +719,11 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
             aria-hidden={index !== activeSlide}
           >
             {index === activeSlide && (
-              <img
+              <ResponsiveImage
                 src={slide.image}
+                mobileSrc={slide.mobileImage}
                 alt=""
                 className="h-full w-full object-cover"
-                decoding="async"
                 fetchPriority={index === 0 ? "high" : "auto"}
                 loading={index === 0 ? "eager" : "lazy"}
                 onError={(event) => restoreImageFallback(event, slide.fallbackImage)}
@@ -653,10 +733,10 @@ function HeroCarousel({ settings }: { settings: SiteSettingMap }) {
           </div>
         ))}
 
-        <div className="relative z-10 flex min-h-[520px] items-end px-4 py-8 md:min-h-[560px] md:items-center md:px-8 md:py-14">
-          <div className="w-full max-w-2xl rounded-2xl border border-white/20 bg-white/80 p-5 shadow-2xl backdrop-blur md:p-8">
+        <div className="relative z-10 flex min-h-[430px] items-end px-4 py-7 sm:min-h-[500px] md:min-h-[560px] md:items-center md:px-8 md:py-14">
+          <div className="w-full max-w-2xl rounded-xl border border-white/20 bg-white/95 p-4 shadow-lg md:rounded-2xl md:bg-white/80 md:p-8 md:shadow-2xl md:backdrop-blur">
             <span className="eyebrow">{heroSlides[activeSlide].eyebrow}</span>
-            <h1 className="mt-3 break-words font-display text-3xl font-semibold leading-tight text-navy md:text-5xl">
+            <h1 className="mt-3 break-words font-display text-2xl font-semibold leading-tight text-navy sm:text-3xl md:text-5xl">
               {heroSlides[activeSlide].title}
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
@@ -765,6 +845,7 @@ function CategoryCarousel({
               <img
                 src={category.image}
                 alt={category.name}
+                srcSet={mobileImageFor(category.image)}
                 decoding="async"
                 loading="lazy"
                 className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
@@ -819,10 +900,10 @@ function ProductSection({
               className="group overflow-hidden rounded-lg border bg-white transition hover:-translate-y-1 hover:border-cyan hover:shadow-[0_18px_34px_-24px_rgba(11,31,58,.55)]"
             >
               <div className="aspect-[5/4] relative overflow-hidden bg-soft">
-                <img
+                <ResponsiveImage
                   src={product.image}
+                  mobileSrc={mobileImageFor(product.image)}
                   alt={product.name}
-                  decoding="async"
                   loading="lazy"
                   className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                 />
@@ -865,11 +946,11 @@ function PromoBand({
 }) {
   return (
     <div className="relative min-h-[360px] overflow-hidden bg-navy">
-      <img
+      <ResponsiveImage
         src={image}
+        mobileSrc={image === fallbackImage ? mobileImageFor(fallbackImage) : undefined}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-85"
-        decoding="async"
         loading="lazy"
         onError={(event) => restoreImageFallback(event, fallbackImage)}
       />

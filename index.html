@@ -3,7 +3,6 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V8TW880NB5"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag() {
@@ -11,6 +10,17 @@
       }
       gtag("js", new Date());
       gtag("config", "G-V8TW880NB5");
+      const loadAnalytics = () => {
+        const script = document.createElement("script");
+        script.async = true;
+        script.src = "https://www.googletagmanager.com/gtag/js?id=G-V8TW880NB5";
+        document.head.appendChild(script);
+      };
+      if ("requestIdleCallback" in window) {
+        window.requestIdleCallback(loadAnalytics, { timeout: 3000 });
+      } else {
+        window.addEventListener("load", () => setTimeout(loadAnalytics, 1500), { once: true });
+      }
     </script>
     <title>Morya Printing Point | Printing Services in Pune & Kothrud</title>
     <meta
@@ -27,7 +37,10 @@
     <meta name="geo.placename" content="Kothrud, Pune" />
     <link rel="canonical" href="https://moryaprinting.com/" />
     <meta property="og:site_name" content="Morya Printing Point" />
-    <meta property="og:title" content="Morya Printing Point | Printing Services in Pune & Kothrud" />
+    <meta
+      property="og:title"
+      content="Morya Printing Point | Printing Services in Pune & Kothrud"
+    />
     <meta
       property="og:description"
       content="Digital printing, flex printing, stickers, labels, banners, visiting cards, stationery and signage services from Morya Printing Point in Kothrud, Pune."
@@ -38,7 +51,10 @@
     <meta property="og:image:alt" content="Morya Printing Point logo" />
     <meta property="og:locale" content="en_IN" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Morya Printing Point | Printing Services in Pune & Kothrud" />
+    <meta
+      name="twitter:title"
+      content="Morya Printing Point | Printing Services in Pune & Kothrud"
+    />
     <meta
       name="twitter:description"
       content="Custom digital printing, flex printing, signage, labels, stickers and visiting cards in Kothrud, Pune."
@@ -48,9 +64,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Poppins:wght@400;500;600;700;800&family=Urbanist:wght@500;600;700;800&display=swap"
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+      onload="
+        this.onload = null;
+        this.rel = 'stylesheet';
+      "
     />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap"
+      />
+    </noscript>
     <link rel="icon" href="/morya-icon-logo.png" type="image/png" sizes="any" />
     <link rel="apple-touch-icon" href="/morya-icon-logo.png" />
     <link rel="manifest" href="/site.webmanifest" />

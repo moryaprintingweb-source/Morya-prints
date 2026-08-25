@@ -38,7 +38,18 @@ export function Footer() {
       <div className="container-x grid gap-8 py-14 md:grid-cols-2 lg:grid-cols-[1.25fr_0.85fr_1fr_1fr_1.35fr] xl:gap-10">
         <div className="lg:max-w-sm">
           <div className="flex items-center gap-3">
-            <img src="/morya-footer-logo.png" alt="Morya Printing Point" className="h-20 w-20" />
+            <picture>
+              <source srcSet="/morya-footer-logo.webp" type="image/webp" />
+              <img
+                src="/morya-footer-logo.png"
+                alt="Morya Printing Point"
+                width="80"
+                height="80"
+                decoding="async"
+                loading="lazy"
+                className="h-20 w-20"
+              />
+            </picture>
             <div>
               <div className="font-display font-bold text-white">Morya Printing Point</div>
               <div className="text-[10px] font-bold uppercase tracking-[.14em] text-orange">
